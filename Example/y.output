@@ -1,0 +1,467 @@
+   0  $accept : program $end
+
+   1  program : block
+
+   2  block : '{' stmts '}'
+
+   3  stmts : stmts stmt
+   4        |
+
+   5  stmt : expr ';'
+   6       | IF '(' expr ')' stmt
+   7       | WHILE '(' expr ')' stmt
+   8       | DO stmt WHILE '(' expr ')' ';'
+   9       | block
+
+  10  expr : ID '=' expr
+  11       | expr '<' expr
+  12       | expr '+' expr
+  13       | expr '*' expr
+  14       | '-' expr
+  15       | '(' expr ')'
+  16       | NUM
+  17       | ID
+
+state 0
+	$accept : . program $end  (0)
+
+	'{'  shift 1
+	.  error
+
+	program  goto 2
+	block  goto 3
+
+
+state 1
+	block : '{' . stmts '}'  (2)
+	stmts : .  (4)
+
+	.  reduce 4
+
+	stmts  goto 4
+
+
+state 2
+	$accept : program . $end  (0)
+
+	$end  accept
+
+
+state 3
+	program : block .  (1)
+
+	.  reduce 1
+
+
+state 4
+	block : '{' stmts . '}'  (2)
+	stmts : stmts . stmt  (3)
+
+	IF  shift 5
+	WHILE  shift 6
+	DO  shift 7
+	ID  shift 8
+	NUM  shift 9
+	'{'  shift 1
+	'}'  shift 10
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	block  goto 13
+	stmt  goto 14
+	expr  goto 15
+
+
+state 5
+	stmt : IF . '(' expr ')' stmt  (6)
+
+	'('  shift 16
+	.  error
+
+
+state 6
+	stmt : WHILE . '(' expr ')' stmt  (7)
+
+	'('  shift 17
+	.  error
+
+
+state 7
+	stmt : DO . stmt WHILE '(' expr ')' ';'  (8)
+
+	IF  shift 5
+	WHILE  shift 6
+	DO  shift 7
+	ID  shift 8
+	NUM  shift 9
+	'{'  shift 1
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	block  goto 13
+	stmt  goto 18
+	expr  goto 15
+
+
+state 8
+	expr : ID . '=' expr  (10)
+	expr : ID .  (17)
+
+	'='  shift 19
+	'<'  reduce 17
+	'+'  reduce 17
+	'*'  reduce 17
+	';'  reduce 17
+	')'  reduce 17
+
+
+state 9
+	expr : NUM .  (16)
+
+	.  reduce 16
+
+
+state 10
+	block : '{' stmts '}' .  (2)
+
+	.  reduce 2
+
+
+state 11
+	expr : '(' . expr ')'  (15)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 20
+
+
+state 12
+	expr : '-' . expr  (14)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 21
+
+
+state 13
+	stmt : block .  (9)
+
+	.  reduce 9
+
+
+state 14
+	stmts : stmts stmt .  (3)
+
+	.  reduce 3
+
+
+state 15
+	stmt : expr . ';'  (5)
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+
+	'<'  shift 22
+	'+'  shift 23
+	'*'  shift 24
+	';'  shift 25
+	.  error
+
+
+state 16
+	stmt : IF '(' . expr ')' stmt  (6)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 26
+
+
+state 17
+	stmt : WHILE '(' . expr ')' stmt  (7)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 27
+
+
+state 18
+	stmt : DO stmt . WHILE '(' expr ')' ';'  (8)
+
+	WHILE  shift 28
+	.  error
+
+
+state 19
+	expr : ID '=' . expr  (10)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 29
+
+
+state 20
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+	expr : '(' expr . ')'  (15)
+
+	'<'  shift 22
+	'+'  shift 23
+	'*'  shift 24
+	')'  shift 30
+	.  error
+
+
+state 21
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+	expr : '-' expr .  (14)
+
+	.  reduce 14
+
+
+state 22
+	expr : expr '<' . expr  (11)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 31
+
+
+state 23
+	expr : expr '+' . expr  (12)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 32
+
+
+state 24
+	expr : expr '*' . expr  (13)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 33
+
+
+state 25
+	stmt : expr ';' .  (5)
+
+	.  reduce 5
+
+
+state 26
+	stmt : IF '(' expr . ')' stmt  (6)
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+
+	'<'  shift 22
+	'+'  shift 23
+	'*'  shift 24
+	')'  shift 34
+	.  error
+
+
+state 27
+	stmt : WHILE '(' expr . ')' stmt  (7)
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+
+	'<'  shift 22
+	'+'  shift 23
+	'*'  shift 24
+	')'  shift 35
+	.  error
+
+
+state 28
+	stmt : DO stmt WHILE . '(' expr ')' ';'  (8)
+
+	'('  shift 36
+	.  error
+
+
+29: shift/reduce conflict (shift 22, reduce 10) on '<'
+29: shift/reduce conflict (shift 23, reduce 10) on '+'
+29: shift/reduce conflict (shift 24, reduce 10) on '*'
+state 29
+	expr : ID '=' expr .  (10)
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+
+	'<'  shift 22
+	'+'  shift 23
+	'*'  shift 24
+	';'  reduce 10
+	')'  reduce 10
+
+
+state 30
+	expr : '(' expr ')' .  (15)
+
+	.  reduce 15
+
+
+state 31
+	expr : expr . '<' expr  (11)
+	expr : expr '<' expr .  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+
+	'+'  shift 23
+	'*'  shift 24
+	';'  reduce 11
+	')'  reduce 11
+
+
+state 32
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr '+' expr .  (12)
+	expr : expr . '*' expr  (13)
+
+	'*'  shift 24
+	'<'  reduce 12
+	'+'  reduce 12
+	';'  reduce 12
+	')'  reduce 12
+
+
+state 33
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+	expr : expr '*' expr .  (13)
+
+	.  reduce 13
+
+
+state 34
+	stmt : IF '(' expr ')' . stmt  (6)
+
+	IF  shift 5
+	WHILE  shift 6
+	DO  shift 7
+	ID  shift 8
+	NUM  shift 9
+	'{'  shift 1
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	block  goto 13
+	stmt  goto 37
+	expr  goto 15
+
+
+state 35
+	stmt : WHILE '(' expr ')' . stmt  (7)
+
+	IF  shift 5
+	WHILE  shift 6
+	DO  shift 7
+	ID  shift 8
+	NUM  shift 9
+	'{'  shift 1
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	block  goto 13
+	stmt  goto 38
+	expr  goto 15
+
+
+state 36
+	stmt : DO stmt WHILE '(' . expr ')' ';'  (8)
+
+	ID  shift 8
+	NUM  shift 9
+	'('  shift 11
+	'-'  shift 12
+	.  error
+
+	expr  goto 39
+
+
+state 37
+	stmt : IF '(' expr ')' stmt .  (6)
+
+	.  reduce 6
+
+
+state 38
+	stmt : WHILE '(' expr ')' stmt .  (7)
+
+	.  reduce 7
+
+
+state 39
+	stmt : DO stmt WHILE '(' expr . ')' ';'  (8)
+	expr : expr . '<' expr  (11)
+	expr : expr . '+' expr  (12)
+	expr : expr . '*' expr  (13)
+
+	'<'  shift 22
+	'+'  shift 23
+	'*'  shift 24
+	')'  shift 40
+	.  error
+
+
+state 40
+	stmt : DO stmt WHILE '(' expr ')' . ';'  (8)
+
+	';'  shift 41
+	.  error
+
+
+state 41
+	stmt : DO stmt WHILE '(' expr ')' ';' .  (8)
+
+	.  reduce 8
+
+
+State 29 contains 3 shift/reduce conflicts.
+
+
+18 terminals, 6 nonterminals
+18 grammar rules, 42 states
