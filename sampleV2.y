@@ -8,6 +8,7 @@ struct info {
         struct info* nextSibling;
 };
 
+#define YYDEBUG 1
 #define YYSTYPE struct info*
 
 void yyerror (char const *s);
@@ -19,8 +20,10 @@ void PrintTree2 (struct info* x);
 
 %}
 
+%debug
+
 %token CLASS PROGRAM
-%token IF FOR ID VOID INT BOOL CALLOUT BREAK CONTINUE ELSE RETURN
+%token IF FOR ID VOID INT BOOL CALLOUT BREAK CONTINUE ELSE
 %token bool_literal char_literal string_literal int_literal
 %token COMMA SEMCOL
 %token PLUS MINUS MUL DIV MOD
@@ -43,10 +46,10 @@ void PrintTree2 (struct info* x);
 %%
 
 program	: CLASS PROGRAM	OB feild_methods CB {	Init (&$$, "program");
-                                                $$->firstChild = $4;
-                                                PrintTree2($$);
-                                            }
-    ;
+				                                $$->firstChild = $4;
+				                                PrintTree2($$);
+			                                }
+	;
 
 feild_methods    :   feild_methods  feild_method    {   Init(&$$, "feild_methods");
                                                         if($1){
@@ -84,14 +87,14 @@ feild_method    :   type ID OP args CP block {   Init(&$$, "method_decl");
                                             $4->nextSibling = $6;
                                         }
     |   type ID ARR_IDS SEMCOL  {   Init(&$$, "feild_decl");
-                                    $$->firstChild = $1;
-                                    $1->nextSibling = $2;
-                                    $2->nextSibling = $3;
+
                                 }
-    |   type ID ASS literal SEMCOL  {   Init(&$$, "assign");
-                                        $$->firstChild = $1;
-                                        $1->nextSibling = $2;
+    |   type ID ASS literal SEMCOL  {   Init(&$$, "feild_decl");
+                                        Init(&$3, "assign");
+                                        $3->firstChild = $2;
                                         $2->nextSibling = $4;
+                                        $$->firstChild = $1;
+                                        $1->nextSibling = $3;
                                     }
     ;
 
@@ -116,7 +119,6 @@ ARR_ID  :   ID  {   $$ = $1;
     |   ID OS int_literal CS    {   Init(&$$, "array");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $3;
-                                    PrintTree($$);
                                 }
     ;
 
@@ -145,12 +147,7 @@ arg :   BOOL ID {   Init(&$$, "bool");
     ;
 
 block   :   OB var_decls stmts CB   {   Init(&$$, "block");
-                                        if($2){
-                                            $$->firstChild = $2;
-                                            $2->firstChild = $3;
-                                        }
-                                        else
-                                            $$->firstChild = $3;
+                                        $$->firstChild = $2;
                                     }
     ;
 
@@ -185,70 +182,29 @@ var :   ID  {   $$ = $1;
     ;
 
 stmts	:	stmts stmt	{	Init (&$$, "stmts");
-                            if ($1) {
-                                $$->firstChild = $1;
-                                $1->nextSibling = $2;
-                            }
+					        if ($1) {
+						        $$->firstChild = $1;
+						        $1->nextSibling = $2;
+					        }
                             else
                                 $$->firstChild = $2;
-                            PrintTree($$);
-                        }
-    |			{	$$ = NULL;
-                    PrintTree($$);
-                }
-    ;
+					        PrintTree($$);
+				        }
+	|			{	$$ = NULL;
+					PrintTree($$);
+				}
+	;
 
 stmt	:	expr_a SEMCOL	{	Init (&$$, "eval");
-                            $$->firstChild = $1;
-                            PrintTree($$);
-                        }
-    |	IF OP expr_a CP block   {   Init (&$$, "if");
-                                    $$->firstChild = $3;
-                                    $3->nextSibling = $5;
-                                    PrintTree($$);
-                                }
-    |	IF OP expr_a CP block ELSE block  {   Init (&$$, "if");
-                                    $$->firstChild = $3;
-                                    $3->nextSibling = $5;
-                                    $5->nextSibling = $7;
-                                    PrintTree($$);
-                                }
-    |   FOR OP fexpr SEMCOL expr_a CP block  {   Init(&$$, "for");
-                                        $$->firstChild = $3;
-                                        $3->nextSibling = $5;
-                                        $5->nextSibling = $7;
-                                        PrintTree($$);
-                                    }
-    |   RETURN Rexpr SEMCOL   {   Init(&$$, "return");
-                            $$->firstChild = $1;
-                            $1->nextSibling = $2;
-                        }
-    |   BREAK   {  $$ = $1;
-                }
-    |   CONTINUE   {   $$ = $1;
-                }
-    |   method_call SEMCOL  {   Init(&$$, "method_call");
-                        $$->firstChild = $1;
-    }
-    ;
-
-method_call :   CALLOUT OP string_literal CP   {   Init(&$$, "callout");
-                                                    $$->firstChild = $3;
-                                                    $3->nextSibling = $4;
-        }
-    ;
-
-Rexpr   :   OP expr_a CP    {  $$ = $2;
-
-                            }
-    |       {   $$ = NULL;  }
-    ;
-
-fexpr   :   ID ASS expr_a { Init(&$$, "assign");
-                            $$->firstChild = $1;
-                            $1->nextSibling = $3;
-                        }
-    ;
+							$$->firstChild = $1;
+							PrintTree($$);
+						}
+	|	IF OP expr_a CP stmt    {   Init (&$$, "if");
+							        $$->firstChild = $3;
+							        $3->nextSibling = $5;
+							        PrintTree($$);
+						        }
+	;
 
 expr_a    :   expr_or   {   $$ = $1;
                         }
@@ -264,24 +220,6 @@ expr_a    :   expr_or   {   $$ = $1;
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                         }
-    |   ID OP expr_rec CP   {   Init(&$$, "method_call");
-                                $$->firstChild = $1;
-                                $1->nextSibling = $3;
-                            }
-    ;
-
-expr_rec    :   expr_a  expr_rec2   {   Init(&$$, "args");
-                                        $$->firstChild = $1;
-                                        $1->nextSibling = $2;
-                                    }
-    |       {   $$ = NULL;  }
-    ;
-
-expr_rec2   :   COMMA expr_a expr_rec2  {   Init(&$$, "args");
-                                            $$->firstChild = $2;
-                                            $2->nextSibling = $3;
-    }
-    |       {   $$ = NULL;  }
     ;
 
 expr_or :   expr_and    {   $$ = $1;
@@ -361,21 +299,17 @@ expr_mdm    :   factor  {   $$ = $1;
     ;
 
 factor  :	OP expr_a CP	{	$$ = $2;
-                            }
+				            }
     |	NOT factor %prec NOT    {	Init (&$$, "cond_NOT");
                                     $$->firstChild = $2;
                                 }
     |	MINUS factor %prec UMINUS   {	Init (&$$, "NEG");
                                         $$->firstChild = $2;
                                     }
-    |	literal		{	$$ = $1;
-                    }
-    |   ID OS expr_a CS {   Init(&$$, "array");
-                            $$->firstChild = $1;
-                            $1->nextSibling = $3;
-                        }
-    |	ID	{	$$ = $1;
-            }
+	|	literal		{	$$ = $1;
+				    }
+	|	ID	{	$$ = $1;
+			}
     ;
 
 literal :   int_literal	{	$$ = $1;
@@ -398,15 +332,15 @@ void yyerror (char const *s) {
  }
 
 void Init (struct info** x, char* type) {
-    *x = (struct info*) malloc (sizeof(struct info));
-    strcpy((*x)->type, type);
-    (*x)->firstChild = NULL;
-    (*x)->nextSibling = NULL;
+	*x = (struct info*) malloc (sizeof(struct info));
+	strcpy((*x)->type, type);
+	(*x)->firstChild = NULL;
+	(*x)->nextSibling = NULL;
 }//Init
 
 void PrintTree2 (struct info* x) {
-    printf("********************\n");
-    Print (x, 0);
+	printf("********************\n");
+	Print (x, 0);
 }
 
 void PrintTree (struct info* x) {
@@ -414,17 +348,17 @@ void PrintTree (struct info* x) {
 }
 
 void Print (struct info* x, int level) {
-    if (x == NULL) return;
+	if (x == NULL) return;
 
-    int i = 0;
+	int i = 0;
     if(x->type[0] != '\0'){
-        for (i = 0; i < level; i ++) printf ("    ");
+	    for (i = 0; i < level; i ++) printf ("    ");
         printf("%s\n", x->type);
     }
 
-    Print (x->firstChild, level + 1);
+	Print (x->firstChild, level + 1);
 
-    Print (x->nextSibling, level);
+	Print (x->nextSibling, level);
 }
 
 int main(void)

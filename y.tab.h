@@ -34,7 +34,7 @@
 # define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 1
+# define YYDEBUG 0
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -57,36 +57,37 @@ extern int yydebug;
     BREAK = 267,
     CONTINUE = 268,
     ELSE = 269,
-    bool_literal = 270,
-    char_literal = 271,
-    string_literal = 272,
-    int_literal = 273,
-    COMMA = 274,
-    SEMCOL = 275,
-    PLUS = 276,
-    MINUS = 277,
-    MUL = 278,
-    DIV = 279,
-    MOD = 280,
-    LT = 281,
-    GT = 282,
-    LE = 283,
-    GE = 284,
-    NE = 285,
-    EQ = 286,
-    ASS = 287,
-    PASS = 288,
-    MASS = 289,
-    AND = 290,
-    OR = 291,
-    NOT = 292,
-    OP = 293,
-    CP = 294,
-    OB = 295,
-    CB = 296,
-    OS = 297,
-    CS = 298,
-    UMINUS = 299
+    RETURN = 270,
+    bool_literal = 271,
+    char_literal = 272,
+    string_literal = 273,
+    int_literal = 274,
+    COMMA = 275,
+    SEMCOL = 276,
+    PLUS = 277,
+    MINUS = 278,
+    MUL = 279,
+    DIV = 280,
+    MOD = 281,
+    LT = 282,
+    GT = 283,
+    LE = 284,
+    GE = 285,
+    NE = 286,
+    EQ = 287,
+    ASS = 288,
+    PASS = 289,
+    MASS = 290,
+    AND = 291,
+    OR = 292,
+    NOT = 293,
+    OP = 294,
+    CP = 295,
+    OB = 296,
+    CB = 297,
+    OS = 298,
+    CS = 299,
+    UMINUS = 300
   };
 #endif
 /* Tokens.  */
@@ -102,36 +103,37 @@ extern int yydebug;
 #define BREAK 267
 #define CONTINUE 268
 #define ELSE 269
-#define bool_literal 270
-#define char_literal 271
-#define string_literal 272
-#define int_literal 273
-#define COMMA 274
-#define SEMCOL 275
-#define PLUS 276
-#define MINUS 277
-#define MUL 278
-#define DIV 279
-#define MOD 280
-#define LT 281
-#define GT 282
-#define LE 283
-#define GE 284
-#define NE 285
-#define EQ 286
-#define ASS 287
-#define PASS 288
-#define MASS 289
-#define AND 290
-#define OR 291
-#define NOT 292
-#define OP 293
-#define CP 294
-#define OB 295
-#define CB 296
-#define OS 297
-#define CS 298
-#define UMINUS 299
+#define RETURN 270
+#define bool_literal 271
+#define char_literal 272
+#define string_literal 273
+#define int_literal 274
+#define COMMA 275
+#define SEMCOL 276
+#define PLUS 277
+#define MINUS 278
+#define MUL 279
+#define DIV 280
+#define MOD 281
+#define LT 282
+#define GT 283
+#define LE 284
+#define GE 285
+#define NE 286
+#define EQ 287
+#define ASS 288
+#define PASS 289
+#define MASS 290
+#define AND 291
+#define OR 292
+#define NOT 293
+#define OP 294
+#define CP 295
+#define OB 296
+#define CB 297
+#define OS 298
+#define CS 299
+#define UMINUS 300
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

@@ -8,16 +8,24 @@
  * Added some of my own operators as well like unary_op to match (++|--),
  * const keyword, and C Pointers as well, like const char *c.
  *
- * Usage: (1.a) $ flex sample.lex
- *        (1.b) $ gcc lex.yy.c -lfl
- *        (1.c) $ ./a.out
+ * Usage: (1.a) $ yacc -d sample.y
+ *        (1.b) $ flex sample.lex
+ *        (1.c) $ yacc -v sample.y
+ *        (1.d) $ gcc y.tab.c -ll -ly
+ *        (1.e) $ ./a.out
  *            stdin> whatever you like
  *	      stdin> Ctrl-D
  *        (2) $ ./a.out < input_file
- *        (3) $ ./run.sh it will run all three commands as stated above
+ *        (3) $ ./run.sh it will run all 5 commands as stated above
  *  and input will be input.c file
  *
  * Sample input.c is included with the package.
+ *
+ *  Modifications to the grammer
+ *  1. Done a great deal of modifications to remove all the conflicts in the grammer.
+ *  2. Broken down the grammer into partial nonterminals symbols to remove conflicts.
+ *  3. Implemented the precedence of operators in expressions.
+ *  4. Made a few changes like using semicolon in for loop and some basic C syntax like structure.
  */
 
 %{
@@ -32,8 +40,8 @@ extern struct info* yylval;
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
 #define INIT(op)  { PRINT Init(&yylval, yytext); return op; }
-#define PRINT     printf("%d. %s\n", counter++, yytext);
-//#define PRINT
+//#define PRINT     printf("%d. %s\n", counter++, yytext);
+#define PRINT
 
 int counter = 1;
 
@@ -99,8 +107,9 @@ Program             RET(PROGRAM);
 if			        RET(IF);
 for                 RET(FOR);
 else                RET(ELSE);
-continue            RET(CONTINUE);
-break               RET(BREAK);
+continue            INIT(CONTINUE);
+break               INIT(BREAK);
+return              INIT(RETURN);
 int                 RET(INT);
 bool                RET(BOOL);
 void                RET(VOID);
