@@ -32,8 +32,8 @@ extern struct info* yylval;
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
 #define INIT(op)  { PRINT Init(&yylval, yytext); return op; }
-//#define PRINT     printf("%d. %s\n", counter++, yytext);
-#define PRINT
+#define PRINT     printf("%d. %s\n", counter++, yytext);
+//#define PRINT
 
 int counter = 1;
 
@@ -81,9 +81,6 @@ skip				[ \t\n]
 /* type of a variable or return type of a function */
 type				(const{skip}+)?(int|bool)
 
-/* End of a line or expression */
-expr_end			;
-
 /* comma in multiple declaration */
 comma               ,
 
@@ -95,7 +92,8 @@ comma               ,
  */
 %%
 {skip}+				/* skip these tokens */
-{expr_end}			TOKEN("expr_end");
+";"			        RET(SEMCOL);
+","                 RET(COMMA)
 class               RET(CLASS);
 Program             RET(PROGRAM);
 if			        RET(IF);
@@ -113,7 +111,6 @@ callout             RET(CALLOUT);
 "}"                 RET(CB);
 "["                 RET(OS);
 "]"                 RET(CS);
-{comma}             TOKEN("comma");
 {bool_literal}		INIT(bool_literal);
 {char_literal}		INIT(char_literal);
 {int_literal}       INIT(int_literal);

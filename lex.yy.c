@@ -380,17 +380,17 @@ struct yy_trans_info
 static yyconst flex_int16_t yy_accept[106] =
     {   0,
         0,    0,   44,   43,    1,   42,   43,   41,   43,   43,
-       14,   15,   39,   37,   20,   38,   40,   23,   23,    2,
-       31,   26,   33,   25,   25,   18,   19,   43,   25,   25,
-       25,   25,   25,   25,   25,   16,   43,   17,    1,   36,
+       15,   16,   39,   37,    3,   38,   40,   23,   23,    2,
+       31,   26,   33,   25,   25,   19,   20,   43,   25,   25,
+       25,   25,   25,   25,   25,   17,   43,   18,    1,   36,
         0,   24,   29,    0,   25,    0,   27,   28,   23,    0,
        32,   35,   34,   25,   25,   25,   25,   25,   25,   25,
-       25,   25,   25,    5,   25,   25,   25,   30,   22,   23,
-       25,   25,   25,   25,   25,   25,   25,   25,    6,   10,
-       25,   25,   25,   11,   25,   25,   25,   25,    7,   25,
-       21,   12,   25,    9,   25,    3,   25,   25,   25,   25,
+       25,   25,   25,    6,   25,   25,   25,   30,   22,   23,
+       25,   25,   25,   25,   25,   25,   25,   25,    7,   11,
+       25,   25,   25,   12,   25,   25,   25,   25,    8,   25,
+       21,   13,   25,   10,   25,    4,   25,   25,   25,   25,
 
-        4,   13,   25,    8,    0
+        5,   14,   25,    9,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -562,8 +562,8 @@ extern struct info* yylval;
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
 #define INIT(op)  { PRINT Init(&yylval, yytext); return op; }
-//#define PRINT     printf("%d. %s\n", counter++, yytext);
-#define PRINT
+#define PRINT     printf("%d. %s\n", counter++, yytext);
+//#define PRINT
 
 int counter = 1;
 
@@ -581,7 +581,6 @@ int counter = 1;
 /* wrapper for int, char, boolean */
 /* Set of characters from the input which needs to be skipped */
 /* type of a variable or return type of a function */
-/* End of a line or expression */
 /* comma in multiple declaration */
 /**
  * Now below is a list of rules that will be applied in the order
@@ -589,7 +588,7 @@ int counter = 1;
  * Each rule is just a matching of already constructed
  * Regular Expressions explained above.
  */
-#line 593 "lex.yy.c"
+#line 592 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -776,9 +775,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 96 "sample.lex"
+#line 93 "sample.lex"
 
-#line 782 "lex.yy.c"
+#line 781 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -864,220 +863,220 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 97 "sample.lex"
+#line 94 "sample.lex"
 /* skip these tokens */
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 98 "sample.lex"
-TOKEN("expr_end");
+#line 95 "sample.lex"
+RET(SEMCOL);
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 99 "sample.lex"
-RET(CLASS);
+#line 96 "sample.lex"
+RET(COMMA)
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 100 "sample.lex"
-RET(PROGRAM);
+#line 97 "sample.lex"
+RET(CLASS);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 101 "sample.lex"
-RET(IF);
+#line 98 "sample.lex"
+RET(PROGRAM);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 102 "sample.lex"
-RET(FOR);
+#line 99 "sample.lex"
+RET(IF);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 103 "sample.lex"
-RET(ELSE);
+#line 100 "sample.lex"
+RET(FOR);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 104 "sample.lex"
-RET(CONTINUE);
+#line 101 "sample.lex"
+RET(ELSE);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 105 "sample.lex"
-RET(BREAK);
+#line 102 "sample.lex"
+RET(CONTINUE);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 106 "sample.lex"
-RET(INT);
+#line 103 "sample.lex"
+RET(BREAK);
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 107 "sample.lex"
-RET(BOOL);
+#line 104 "sample.lex"
+RET(INT);
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 108 "sample.lex"
-RET(VOID);
+#line 105 "sample.lex"
+RET(BOOL);
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 109 "sample.lex"
-RET(CALLOUT);
+#line 106 "sample.lex"
+RET(VOID);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 110 "sample.lex"
-RET(OP);
+#line 107 "sample.lex"
+RET(CALLOUT);
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 111 "sample.lex"
-RET(CP);
+#line 108 "sample.lex"
+RET(OP);
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 112 "sample.lex"
-RET(OB);
+#line 109 "sample.lex"
+RET(CP);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 113 "sample.lex"
-RET(CB);
+#line 110 "sample.lex"
+RET(OB);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 114 "sample.lex"
-RET(OS);
+#line 111 "sample.lex"
+RET(CB);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 115 "sample.lex"
-RET(CS);
+#line 112 "sample.lex"
+RET(OS);
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 116 "sample.lex"
-TOKEN("comma");
+#line 113 "sample.lex"
+RET(CS);
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 117 "sample.lex"
+#line 114 "sample.lex"
 INIT(bool_literal);
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 118 "sample.lex"
+#line 115 "sample.lex"
 INIT(char_literal);
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 119 "sample.lex"
+#line 116 "sample.lex"
 INIT(int_literal);
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 120 "sample.lex"
+#line 117 "sample.lex"
 INIT(string_literal);
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 121 "sample.lex"
+#line 118 "sample.lex"
 INIT(ID);
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 122 "sample.lex"
+#line 119 "sample.lex"
 RET(ASS);
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 123 "sample.lex"
+#line 120 "sample.lex"
 RET(PASS);
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 124 "sample.lex"
+#line 121 "sample.lex"
 RET(MASS);
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 125 "sample.lex"
+#line 122 "sample.lex"
 RET(AND);
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 126 "sample.lex"
+#line 123 "sample.lex"
 RET(OR);
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 127 "sample.lex"
+#line 124 "sample.lex"
 RET(LT);
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 128 "sample.lex"
+#line 125 "sample.lex"
 RET(LE);
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 129 "sample.lex"
+#line 126 "sample.lex"
 RET(GT);
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 130 "sample.lex"
+#line 127 "sample.lex"
 RET(GE);
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 131 "sample.lex"
+#line 128 "sample.lex"
 RET(EQ);
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 132 "sample.lex"
+#line 129 "sample.lex"
 RET(NE);
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 133 "sample.lex"
+#line 130 "sample.lex"
 RET(PLUS);
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 134 "sample.lex"
+#line 131 "sample.lex"
 RET(MINUS);
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 135 "sample.lex"
+#line 132 "sample.lex"
 RET(MUL);
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 136 "sample.lex"
+#line 133 "sample.lex"
 RET(DIV);
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 137 "sample.lex"
+#line 134 "sample.lex"
 RET(MOD);
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 138 "sample.lex"
+#line 135 "sample.lex"
 RET(NOT);
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 140 "sample.lex"
+#line 137 "sample.lex"
 ECHO;
 	YY_BREAK
-#line 1081 "lex.yy.c"
+#line 1080 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2075,7 +2074,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 140 "sample.lex"
+#line 137 "sample.lex"
 
 
 

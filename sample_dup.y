@@ -51,6 +51,24 @@ program	: CLASS PROGRAM	OB method_decls CB   {	Init (&$$, "program");
 			                    }
 	;
 
+block   :   OB stmts CB	{	Init (&$$, "block");
+                                $$->firstChild = $2;
+                                PrintTree($$);
+                            }
+	;
+
+feild_decls :   feild_decls feild_decl  {   Init(&$$, "feild_decls");
+                                            if($1){
+                                                $$->firstChild = $1;
+                                                $1->nextSibling = $2;
+                                            }
+                                            else
+                                                $$->firstChild = $2;
+                                        }
+    |       {   $$ = NULL;
+            }
+    ;
+
 method_decls :   method_decls method_decl   {   Init(&$$, "method_decls");
                                                 if($1){
                                                     $$->firstChild = $1;
@@ -63,62 +81,57 @@ method_decls :   method_decls method_decl   {   Init(&$$, "method_decls");
             }
     ;
 
-method_decl :   VOID ID OP args CP block    {   Init(&$$, "bool");
-                                                $$->firstChild = $2;
-                                                if($4) {
-                                                    $2->nextSibling = $4;
-                                                    $4->nextSibling = $6;
-                                                }
-                                                else
-                                                    $2->nextSibling = $6;
-                                            }
-    |   INT ID OP args CP block {   Init(&$$, "int");
-                                    $$->firstChild = $2;
-                                    if($4) {
-                                        $2->nextSibling = $4;
-                                        $4->nextSibling = $6;
+feild_decl  :   type id_arr types COMMA {   Init(&$$, "type");
+                                        $$->firstChild = $1;
+                                        $1->nextSibling = $2;
+                                        if($3)
+                                            $2->nextSibling = $3;
+                                    }
+    ;
+
+id_arr  :   ID  {   $$ = $1;
+                }
+    |   ID OS int_literal CS    {   Init(&$$, "array");
+                                    $$->firstChild = $1;
+                                    $1->nextSibling = $3;
+                                }
+    ;
+
+types   :   COMMA id_arr types  {   Init(&$$, "types");
+                                    if($3){
+                                        $$->firstChild = $2;
+                                        $$->nextSibling = $3;
                                     }
                                     else
-                                        $2->nextSibling = $6;
-                                }
-    |   BOOL ID OP args CP block    {   Init(&$$, "bool");
                                         $$->firstChild = $2;
-                                        if($4) {
-                                            $2->nextSibling = $4;
-                                            $4->nextSibling = $6;
-                                        }
-                                        else
-                                            $2->nextSibling = $6;
-                                    }
+                                }
     ;
 
-args    :   arg args1   {   Init(&$$, "args");
-                            $$->firstChild = $1;
-                            $1->nextSibling = $2;
-                        }
-    |       {   $$ = NULL;
-            }
+method_decl :   VOID ID OP CP block    {   Init(&$$, "void");
+                                                $$->firstChild = $2;
+                                            }
+    |   INT ID OP CP block  {   Init(&$$, "int");
+                                $$->firstChild = $2;
+                            }
+    |   BOOL ID OP CP block {   Init(&$$, "bool");
+                                $$->firstChild = $2;
+                            }
     ;
 
-args1   :   COMMA arg args1 {   Init(&$$, "args");
+args    :       {   $$ = NULL;
+                }
+    ;
+
+arg :   type ID {   Init(&$$, "arg");
+                    $$->firstChild = $1;
+                    $1->nextSibling = $2;
+                }
+    ;
+
+args1   :   COMMA arg args  {   Init(&$$, "args");
                                 $$->firstChild = $2;
                                 $2->nextSibling = $3;
                             }
-    |       {   $$ = NULL;
-            }
-    ;
-
-arg :   BOOL ID {   Init(&$$, "bool");
-                    $$->firstChild = $2;
-                }
-    |   INT ID  {   Init(&$$, "int");
-                    $$->firstChild = $2;
-                }
-    ;
-
-block   :   OB stmts CB   {   Init(&$$, "block");
-                                        $$->firstChild = $2;
-                                    }
     ;
 
 stmts	:	stmts stmt	{	Init (&$$, "stmts");
@@ -144,6 +157,10 @@ stmt	:	expr_a SEMCOL	{	Init (&$$, "eval");
 							        $3->nextSibling = $5;
 							        PrintTree($$);
 						        }
+	|	block	{	Init (&$$, "block");
+					$$->firstChild = $1;
+					PrintTree($$);
+				}
 	;
 
 expr_a    :   expr_or   {   $$ = $1;
@@ -265,7 +282,7 @@ literal :   int_literal	{	$$ = $1;
 
 #include "lex.yy.c"
 
-//extern yydebug = 1;
+extern yydebug = 1;
 
 void yyerror (char const *s) {
    fprintf (stderr, "%s\n", s);

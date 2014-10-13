@@ -24,7 +24,6 @@ void Print (struct info* x, int l);
 %left '*'
 %right UMINUS
 
-
 %%
 
 program	:	block	{	Init (&$$, "program");

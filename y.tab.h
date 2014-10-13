@@ -61,30 +61,32 @@ extern int yydebug;
     char_literal = 271,
     string_literal = 272,
     int_literal = 273,
-    PLUS = 274,
-    MINUS = 275,
-    MUL = 276,
-    DIV = 277,
-    MOD = 278,
-    LT = 279,
-    GT = 280,
-    LE = 281,
-    GE = 282,
-    NE = 283,
-    EQ = 284,
-    ASS = 285,
-    PASS = 286,
-    MASS = 287,
-    AND = 288,
-    OR = 289,
-    NOT = 290,
-    OP = 291,
-    CP = 292,
-    OB = 293,
-    CB = 294,
-    OS = 295,
-    CS = 296,
-    UMINUS = 297
+    COMMA = 274,
+    SEMCOL = 275,
+    PLUS = 276,
+    MINUS = 277,
+    MUL = 278,
+    DIV = 279,
+    MOD = 280,
+    LT = 281,
+    GT = 282,
+    LE = 283,
+    GE = 284,
+    NE = 285,
+    EQ = 286,
+    ASS = 287,
+    PASS = 288,
+    MASS = 289,
+    AND = 290,
+    OR = 291,
+    NOT = 292,
+    OP = 293,
+    CP = 294,
+    OB = 295,
+    CB = 296,
+    OS = 297,
+    CS = 298,
+    UMINUS = 299
   };
 #endif
 /* Tokens.  */
@@ -104,30 +106,32 @@ extern int yydebug;
 #define char_literal 271
 #define string_literal 272
 #define int_literal 273
-#define PLUS 274
-#define MINUS 275
-#define MUL 276
-#define DIV 277
-#define MOD 278
-#define LT 279
-#define GT 280
-#define LE 281
-#define GE 282
-#define NE 283
-#define EQ 284
-#define ASS 285
-#define PASS 286
-#define MASS 287
-#define AND 288
-#define OR 289
-#define NOT 290
-#define OP 291
-#define CP 292
-#define OB 293
-#define CB 294
-#define OS 295
-#define CS 296
-#define UMINUS 297
+#define COMMA 274
+#define SEMCOL 275
+#define PLUS 276
+#define MINUS 277
+#define MUL 278
+#define DIV 279
+#define MOD 280
+#define LT 281
+#define GT 282
+#define LE 283
+#define GE 284
+#define NE 285
+#define EQ 286
+#define ASS 287
+#define PASS 288
+#define MASS 289
+#define AND 290
+#define OR 291
+#define NOT 292
+#define OP 293
+#define CP 294
+#define OB 295
+#define CB 296
+#define OS 297
+#define CS 298
+#define UMINUS 299
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
