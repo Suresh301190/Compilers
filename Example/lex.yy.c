@@ -789,7 +789,7 @@ YY_RULE_SETUP
 case 7:
 YY_RULE_SETUP
 #line 23 "example.l"
-{ return yytext;}
+{ return yytext[0];}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP

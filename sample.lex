@@ -32,7 +32,8 @@ extern struct info* yylval;
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
 #define INIT(op)  { PRINT Init(&yylval, yytext); return op; }
-#define PRINT     printf("%d. %s\n", counter++, yytext);
+//#define PRINT     printf("%d. %s\n", counter++, yytext);
+#define PRINT
 
 int counter = 1;
 
@@ -83,17 +84,8 @@ type				(const{skip}+)?(int|bool)
 /* End of a line or expression */
 expr_end			;
 
-/* wrapper for statement types */
-statement			("if"|"for"|"return"|"break"|"continue")
-
 /* comma in multiple declaration */
 comma               ,
-
-/* if a method is called */
-method_call         "callout"
-
-/* method return type */
-method_decl         "void"|{type}
 
 /**
  * Now below is a list of rules that will be applied in the order
@@ -108,7 +100,13 @@ class               RET(CLASS);
 Program             RET(PROGRAM);
 if			        RET(IF);
 for                 RET(FOR);
-{type}				TOKEN("type");
+else                RET(ELSE);
+continue            RET(CONTINUE);
+break               RET(BREAK);
+int                 RET(INT);
+bool                RET(BOOL);
+void                RET(VOID);
+callout             RET(CALLOUT);
 "("                 RET(OP);
 ")"                 RET(CP);
 "{"                 RET(OB);
@@ -116,8 +114,6 @@ for                 RET(FOR);
 "["                 RET(OS);
 "]"                 RET(CS);
 {comma}             TOKEN("comma");
-{method_decl}       TOKEN("method_decl");
-{method_call}       TOKEN("method_call");
 {bool_literal}		INIT(bool_literal);
 {char_literal}		INIT(char_literal);
 {int_literal}       INIT(int_literal);

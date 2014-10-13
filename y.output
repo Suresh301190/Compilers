@@ -1,10 +1,19 @@
 Terminals unused in grammar
 
    FOR
-   bool_literal
+   BOOL
+   CALLOUT
+   BREAK
+   CONTINUE
+   ELSE
    OS
    CS
-   UMINUS
+
+
+State 7 conflicts: 1 shift/reduce
+State 8 conflicts: 11 shift/reduce
+State 10 conflicts: 1 shift/reduce
+State 80 conflicts: 10 shift/reduce
 
 
 Grammar
@@ -13,97 +22,154 @@ Grammar
 
     1 program: CLASS PROGRAM block
 
-    2 block: OB stmts CB
+    2 block: feild_decls method_decls
+    3      | OB stmts CB
 
-    3 stmts: stmts stmt
-    4      | %empty
+    4 feild_decls: feild_decls feild_decl
+    5            | %empty
 
-    5 stmt: expr_a ';'
-    6     | IF OP expr_a CP stmt
-    7     | block
+    6 method_decls: method_decls method_decl
+    7             | %empty
 
-    8 expr_a: expr_c
-    9       | ID ASSIGN_OP expr_c
+    8 feild_decl: INT ID ';'
+    9           | INT ID ASS literal ';'
 
-   10 expr_c: expr_r
-   11       | expr_c COND_OP expr_r
+   10 method_decl: VOID ID
 
-   12 expr_r: expr_pm
-   13       | expr_r REL_OP expr_pm
-   14       | expr_r EQ_OP expr_pm
+   11 stmts: stmts stmt
+   12      | %empty
 
-   15 expr_pm: expr_mdm
-   16        | expr_pm PLUS expr_mdm
-   17        | expr_pm MINUS expr_mdm
+   13 stmt: expr_a ';'
+   14     | IF OP expr_a CP stmt
+   15     | block
 
-   18 expr_mdm: factor
-   19         | expr_mdm MUL factor
-   20         | expr_mdm DIV factor
-   21         | expr_mdm MOD factor
+   16 expr_a: expr_or
+   17       | ID ASS expr_or
+   18       | ID PASS expr_or
+   19       | ID MASS expr_or
 
-   22 factor: OP expr_a CP
-   23       | int_literal
-   24       | string_literal
-   25       | char_literal
-   26       | ID
+   20 expr_or: expr_and
+   21        | expr_or OR expr_and
+
+   22 expr_and: expr_eq
+   23         | expr_and AND expr_eq
+
+   24 expr_eq: expr_rel
+   25        | expr_eq EQ expr_rel
+   26        | expr_eq NE expr_rel
+
+   27 expr_rel: expr_pm
+   28         | expr_rel LT expr_pm
+   29         | expr_rel GT expr_pm
+   30         | expr_rel LE expr_pm
+   31         | expr_rel GE expr_pm
+
+   32 expr_pm: expr_mdm
+   33        | expr_pm PLUS expr_mdm
+   34        | expr_pm MINUS expr_mdm
+
+   35 expr_mdm: factor
+   36         | expr_mdm MUL factor
+   37         | expr_mdm DIV factor
+   38         | expr_mdm MOD factor
+
+   39 factor: OP expr_a CP
+   40       | NOT factor
+   41       | MINUS factor
+   42       | literal
+   43       | ID
+
+   44 literal: int_literal
+   45        | string_literal
+   46        | char_literal
+   47        | bool_literal
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-';' (59) 5
+';' (59) 8 9 13
 error (256)
 CLASS (258) 1
 PROGRAM (259) 1
-IF (260) 6
+IF (260) 14
 FOR (261)
-ID (262) 9 26
-bool_literal (263)
-char_literal (264) 25
-string_literal (265) 24
-int_literal (266) 23
-PLUS (267) 16
-MINUS (268) 17
-MUL (269) 19
-DIV (270) 20
-MOD (271) 21
-REL_OP (272) 13
-EQ_OP (273) 14
-ASSIGN_OP (274) 9
-COND_OP (275) 11
-OP (276) 6 22
-CP (277) 6 22
-OB (278) 2
-CB (279) 2
-OS (280)
-CS (281)
-UMINUS (282)
+ID (262) 8 9 10 17 18 19 43
+VOID (263) 10
+INT (264) 8 9
+BOOL (265)
+CALLOUT (266)
+BREAK (267)
+CONTINUE (268)
+ELSE (269)
+bool_literal (270) 47
+char_literal (271) 46
+string_literal (272) 45
+int_literal (273) 44
+PLUS (274) 33
+MINUS (275) 34 41
+MUL (276) 36
+DIV (277) 37
+MOD (278) 38
+LT (279) 28
+GT (280) 29
+LE (281) 30
+GE (282) 31
+NE (283) 26
+EQ (284) 25
+ASS (285) 9 17
+PASS (286) 18
+MASS (287) 19
+AND (288) 23
+OR (289) 21
+NOT (290) 40
+OP (291) 14 39
+CP (292) 14 39
+OB (293) 3
+CB (294) 3
+OS (295)
+CS (296)
+UMINUS (297)
 
 
 Nonterminals, with rules where they appear
 
-$accept (29)
+$accept (44)
     on left: 0
-program (30)
+program (45)
     on left: 1, on right: 0
-block (31)
-    on left: 2, on right: 1 7
-stmts (32)
-    on left: 3 4, on right: 2 3
-stmt (33)
-    on left: 5 6 7, on right: 3 6
-expr_a (34)
-    on left: 8 9, on right: 5 6 22
-expr_c (35)
-    on left: 10 11, on right: 8 9 11
-expr_r (36)
-    on left: 12 13 14, on right: 10 11 13 14
-expr_pm (37)
-    on left: 15 16 17, on right: 12 13 14 16 17
-expr_mdm (38)
-    on left: 18 19 20 21, on right: 15 16 17 19 20 21
-factor (39)
-    on left: 22 23 24 25 26, on right: 18 19 20 21
+block (46)
+    on left: 2 3, on right: 1 15
+feild_decls (47)
+    on left: 4 5, on right: 2 4
+method_decls (48)
+    on left: 6 7, on right: 2 6
+feild_decl (49)
+    on left: 8 9, on right: 4
+method_decl (50)
+    on left: 10, on right: 6
+stmts (51)
+    on left: 11 12, on right: 3 11
+stmt (52)
+    on left: 13 14 15, on right: 11 14
+expr_a (53)
+    on left: 16 17 18 19, on right: 13 14 39
+expr_or (54)
+    on left: 20 21, on right: 16 17 18 19 21
+expr_and (55)
+    on left: 22 23, on right: 20 21 23
+expr_eq (56)
+    on left: 24 25 26, on right: 22 23 25 26
+expr_rel (57)
+    on left: 27 28 29 30 31, on right: 24 25 26 28 29 30 31
+expr_pm (58)
+    on left: 32 33 34, on right: 27 28 29 30 31 33 34
+expr_mdm (59)
+    on left: 35 36 37 38, on right: 32 33 34 36 37 38
+factor (60)
+    on left: 39 40 41 42 43, on right: 35 36 37 38 40 41
+literal (61)
+    on left: 44 45 46 47, on right: 9 42
 
 
 State 0
@@ -135,7 +201,10 @@ State 3
 
     OB  shift, and go to state 5
 
-    block  go to state 6
+    $default  reduce using rule 5 (feild_decls)
+
+    block        go to state 6
+    feild_decls  go to state 7
 
 
 State 4
@@ -147,11 +216,11 @@ State 4
 
 State 5
 
-    2 block: OB . stmts CB
+    3 block: OB . stmts CB
 
-    $default  reduce using rule 4 (stmts)
+    $default  reduce using rule 12 (stmts)
 
-    stmts  go to state 7
+    stmts  go to state 8
 
 
 State 6
@@ -163,469 +232,988 @@ State 6
 
 State 7
 
-    2 block: OB stmts . CB
-    3 stmts: stmts . stmt
+    2 block: feild_decls . method_decls
+    4 feild_decls: feild_decls . feild_decl
 
-    IF              shift, and go to state 8
-    ID              shift, and go to state 9
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-    OB              shift, and go to state 5
-    CB              shift, and go to state 14
+    INT  shift, and go to state 9
 
-    block     go to state 15
-    stmt      go to state 16
-    expr_a    go to state 17
-    expr_c    go to state 18
-    expr_r    go to state 19
-    expr_pm   go to state 20
-    expr_mdm  go to state 21
-    factor    go to state 22
+    INT       [reduce using rule 7 (method_decls)]
+    $default  reduce using rule 7 (method_decls)
+
+    method_decls  go to state 10
+    feild_decl    go to state 11
 
 
 State 8
 
-    6 stmt: IF . OP expr_a CP stmt
+    3 block: OB stmts . CB
+   11 stmts: stmts . stmt
 
-    OP  shift, and go to state 23
+    IF              shift, and go to state 12
+    ID              shift, and go to state 13
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+    OB              shift, and go to state 5
+    CB              shift, and go to state 21
+
+    IF              [reduce using rule 5 (feild_decls)]
+    ID              [reduce using rule 5 (feild_decls)]
+    bool_literal    [reduce using rule 5 (feild_decls)]
+    char_literal    [reduce using rule 5 (feild_decls)]
+    string_literal  [reduce using rule 5 (feild_decls)]
+    int_literal     [reduce using rule 5 (feild_decls)]
+    MINUS           [reduce using rule 5 (feild_decls)]
+    NOT             [reduce using rule 5 (feild_decls)]
+    OP              [reduce using rule 5 (feild_decls)]
+    OB              [reduce using rule 5 (feild_decls)]
+    CB              [reduce using rule 5 (feild_decls)]
+    $default        reduce using rule 5 (feild_decls)
+
+    block        go to state 22
+    feild_decls  go to state 7
+    stmt         go to state 23
+    expr_a       go to state 24
+    expr_or      go to state 25
+    expr_and     go to state 26
+    expr_eq      go to state 27
+    expr_rel     go to state 28
+    expr_pm      go to state 29
+    expr_mdm     go to state 30
+    factor       go to state 31
+    literal      go to state 32
 
 
 State 9
 
-    9 expr_a: ID . ASSIGN_OP expr_c
-   26 factor: ID .
+    8 feild_decl: INT . ID ';'
+    9           | INT . ID ASS literal ';'
 
-    ASSIGN_OP  shift, and go to state 24
-
-    $default  reduce using rule 26 (factor)
+    ID  shift, and go to state 33
 
 
 State 10
 
-   25 factor: char_literal .
+    2 block: feild_decls method_decls .
+    6 method_decls: method_decls . method_decl
 
-    $default  reduce using rule 25 (factor)
+    VOID  shift, and go to state 34
+
+    VOID      [reduce using rule 2 (block)]
+    $default  reduce using rule 2 (block)
+
+    method_decl  go to state 35
 
 
 State 11
 
-   24 factor: string_literal .
+    4 feild_decls: feild_decls feild_decl .
 
-    $default  reduce using rule 24 (factor)
+    $default  reduce using rule 4 (feild_decls)
 
 
 State 12
 
-   23 factor: int_literal .
+   14 stmt: IF . OP expr_a CP stmt
 
-    $default  reduce using rule 23 (factor)
+    OP  shift, and go to state 36
 
 
 State 13
 
-   22 factor: OP . expr_a CP
+   17 expr_a: ID . ASS expr_or
+   18       | ID . PASS expr_or
+   19       | ID . MASS expr_or
+   43 factor: ID .
 
-    ID              shift, and go to state 9
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
+    ASS   shift, and go to state 37
+    PASS  shift, and go to state 38
+    MASS  shift, and go to state 39
 
-    expr_a    go to state 25
-    expr_c    go to state 18
-    expr_r    go to state 19
-    expr_pm   go to state 20
-    expr_mdm  go to state 21
-    factor    go to state 22
+    $default  reduce using rule 43 (factor)
 
 
 State 14
 
-    2 block: OB stmts CB .
+   47 literal: bool_literal .
 
-    $default  reduce using rule 2 (block)
+    $default  reduce using rule 47 (literal)
 
 
 State 15
 
-    7 stmt: block .
+   46 literal: char_literal .
 
-    $default  reduce using rule 7 (stmt)
+    $default  reduce using rule 46 (literal)
 
 
 State 16
 
-    3 stmts: stmts stmt .
+   45 literal: string_literal .
 
-    $default  reduce using rule 3 (stmts)
+    $default  reduce using rule 45 (literal)
 
 
 State 17
 
-    5 stmt: expr_a . ';'
+   44 literal: int_literal .
 
-    ';'  shift, and go to state 26
+    $default  reduce using rule 44 (literal)
 
 
 State 18
 
-    8 expr_a: expr_c .
-   11 expr_c: expr_c . COND_OP expr_r
+   41 factor: MINUS . factor
 
-    COND_OP  shift, and go to state 27
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
 
-    $default  reduce using rule 8 (expr_a)
+    factor   go to state 41
+    literal  go to state 32
 
 
 State 19
 
-   10 expr_c: expr_r .
-   13 expr_r: expr_r . REL_OP expr_pm
-   14       | expr_r . EQ_OP expr_pm
+   40 factor: NOT . factor
 
-    REL_OP  shift, and go to state 28
-    EQ_OP   shift, and go to state 29
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
 
-    $default  reduce using rule 10 (expr_c)
+    factor   go to state 42
+    literal  go to state 32
 
 
 State 20
 
-   12 expr_r: expr_pm .
-   16 expr_pm: expr_pm . PLUS expr_mdm
-   17        | expr_pm . MINUS expr_mdm
+   39 factor: OP . expr_a CP
 
-    PLUS   shift, and go to state 30
-    MINUS  shift, and go to state 31
+    ID              shift, and go to state 13
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
 
-    $default  reduce using rule 12 (expr_r)
+    expr_a    go to state 43
+    expr_or   go to state 25
+    expr_and  go to state 26
+    expr_eq   go to state 27
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 21
 
-   15 expr_pm: expr_mdm .
-   19 expr_mdm: expr_mdm . MUL factor
-   20         | expr_mdm . DIV factor
-   21         | expr_mdm . MOD factor
+    3 block: OB stmts CB .
 
-    MUL  shift, and go to state 32
-    DIV  shift, and go to state 33
-    MOD  shift, and go to state 34
-
-    $default  reduce using rule 15 (expr_pm)
+    $default  reduce using rule 3 (block)
 
 
 State 22
 
-   18 expr_mdm: factor .
+   15 stmt: block .
 
-    $default  reduce using rule 18 (expr_mdm)
+    $default  reduce using rule 15 (stmt)
 
 
 State 23
 
-    6 stmt: IF OP . expr_a CP stmt
+   11 stmts: stmts stmt .
 
-    ID              shift, and go to state 9
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-
-    expr_a    go to state 35
-    expr_c    go to state 18
-    expr_r    go to state 19
-    expr_pm   go to state 20
-    expr_mdm  go to state 21
-    factor    go to state 22
+    $default  reduce using rule 11 (stmts)
 
 
 State 24
 
-    9 expr_a: ID ASSIGN_OP . expr_c
+   13 stmt: expr_a . ';'
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-
-    expr_c    go to state 37
-    expr_r    go to state 19
-    expr_pm   go to state 20
-    expr_mdm  go to state 21
-    factor    go to state 22
+    ';'  shift, and go to state 44
 
 
 State 25
 
-   22 factor: OP expr_a . CP
+   16 expr_a: expr_or .
+   21 expr_or: expr_or . OR expr_and
 
-    CP  shift, and go to state 38
+    OR  shift, and go to state 45
+
+    $default  reduce using rule 16 (expr_a)
 
 
 State 26
 
-    5 stmt: expr_a ';' .
+   20 expr_or: expr_and .
+   23 expr_and: expr_and . AND expr_eq
 
-    $default  reduce using rule 5 (stmt)
+    AND  shift, and go to state 46
+
+    $default  reduce using rule 20 (expr_or)
 
 
 State 27
 
-   11 expr_c: expr_c COND_OP . expr_r
+   22 expr_and: expr_eq .
+   25 expr_eq: expr_eq . EQ expr_rel
+   26        | expr_eq . NE expr_rel
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
+    NE  shift, and go to state 47
+    EQ  shift, and go to state 48
 
-    expr_r    go to state 39
-    expr_pm   go to state 20
-    expr_mdm  go to state 21
-    factor    go to state 22
+    $default  reduce using rule 22 (expr_and)
 
 
 State 28
 
-   13 expr_r: expr_r REL_OP . expr_pm
+   24 expr_eq: expr_rel .
+   28 expr_rel: expr_rel . LT expr_pm
+   29         | expr_rel . GT expr_pm
+   30         | expr_rel . LE expr_pm
+   31         | expr_rel . GE expr_pm
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
+    LT  shift, and go to state 49
+    GT  shift, and go to state 50
+    LE  shift, and go to state 51
+    GE  shift, and go to state 52
 
-    expr_pm   go to state 40
-    expr_mdm  go to state 21
-    factor    go to state 22
+    $default  reduce using rule 24 (expr_eq)
 
 
 State 29
 
-   14 expr_r: expr_r EQ_OP . expr_pm
+   27 expr_rel: expr_pm .
+   33 expr_pm: expr_pm . PLUS expr_mdm
+   34        | expr_pm . MINUS expr_mdm
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
+    PLUS   shift, and go to state 53
+    MINUS  shift, and go to state 54
 
-    expr_pm   go to state 41
-    expr_mdm  go to state 21
-    factor    go to state 22
+    $default  reduce using rule 27 (expr_rel)
 
 
 State 30
 
-   16 expr_pm: expr_pm PLUS . expr_mdm
+   32 expr_pm: expr_mdm .
+   36 expr_mdm: expr_mdm . MUL factor
+   37         | expr_mdm . DIV factor
+   38         | expr_mdm . MOD factor
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
+    MUL  shift, and go to state 55
+    DIV  shift, and go to state 56
+    MOD  shift, and go to state 57
 
-    expr_mdm  go to state 42
-    factor    go to state 22
+    $default  reduce using rule 32 (expr_pm)
 
 
 State 31
 
-   17 expr_pm: expr_pm MINUS . expr_mdm
+   35 expr_mdm: factor .
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-
-    expr_mdm  go to state 43
-    factor    go to state 22
+    $default  reduce using rule 35 (expr_mdm)
 
 
 State 32
 
-   19 expr_mdm: expr_mdm MUL . factor
+   42 factor: literal .
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-
-    factor  go to state 44
+    $default  reduce using rule 42 (factor)
 
 
 State 33
 
-   20 expr_mdm: expr_mdm DIV . factor
+    8 feild_decl: INT ID . ';'
+    9           | INT ID . ASS literal ';'
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-
-    factor  go to state 45
+    ASS  shift, and go to state 58
+    ';'  shift, and go to state 59
 
 
 State 34
 
-   21 expr_mdm: expr_mdm MOD . factor
+   10 method_decl: VOID . ID
 
-    ID              shift, and go to state 36
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-
-    factor  go to state 46
+    ID  shift, and go to state 60
 
 
 State 35
 
-    6 stmt: IF OP expr_a . CP stmt
+    6 method_decls: method_decls method_decl .
 
-    CP  shift, and go to state 47
+    $default  reduce using rule 6 (method_decls)
 
 
 State 36
 
-   26 factor: ID .
+   14 stmt: IF OP . expr_a CP stmt
 
-    $default  reduce using rule 26 (factor)
+    ID              shift, and go to state 13
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_a    go to state 61
+    expr_or   go to state 25
+    expr_and  go to state 26
+    expr_eq   go to state 27
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 37
 
-    9 expr_a: ID ASSIGN_OP expr_c .
-   11 expr_c: expr_c . COND_OP expr_r
+   17 expr_a: ID ASS . expr_or
 
-    COND_OP  shift, and go to state 27
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
 
-    $default  reduce using rule 9 (expr_a)
+    expr_or   go to state 62
+    expr_and  go to state 26
+    expr_eq   go to state 27
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 38
 
-   22 factor: OP expr_a CP .
+   18 expr_a: ID PASS . expr_or
 
-    $default  reduce using rule 22 (factor)
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_or   go to state 63
+    expr_and  go to state 26
+    expr_eq   go to state 27
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 39
 
-   11 expr_c: expr_c COND_OP expr_r .
-   13 expr_r: expr_r . REL_OP expr_pm
-   14       | expr_r . EQ_OP expr_pm
+   19 expr_a: ID MASS . expr_or
 
-    REL_OP  shift, and go to state 28
-    EQ_OP   shift, and go to state 29
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
 
-    $default  reduce using rule 11 (expr_c)
+    expr_or   go to state 64
+    expr_and  go to state 26
+    expr_eq   go to state 27
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 40
 
-   13 expr_r: expr_r REL_OP expr_pm .
-   16 expr_pm: expr_pm . PLUS expr_mdm
-   17        | expr_pm . MINUS expr_mdm
+   43 factor: ID .
 
-    PLUS   shift, and go to state 30
-    MINUS  shift, and go to state 31
-
-    $default  reduce using rule 13 (expr_r)
+    $default  reduce using rule 43 (factor)
 
 
 State 41
 
-   14 expr_r: expr_r EQ_OP expr_pm .
-   16 expr_pm: expr_pm . PLUS expr_mdm
-   17        | expr_pm . MINUS expr_mdm
+   41 factor: MINUS factor .
 
-    PLUS   shift, and go to state 30
-    MINUS  shift, and go to state 31
-
-    $default  reduce using rule 14 (expr_r)
+    $default  reduce using rule 41 (factor)
 
 
 State 42
 
-   16 expr_pm: expr_pm PLUS expr_mdm .
-   19 expr_mdm: expr_mdm . MUL factor
-   20         | expr_mdm . DIV factor
-   21         | expr_mdm . MOD factor
+   40 factor: NOT factor .
 
-    MUL  shift, and go to state 32
-    DIV  shift, and go to state 33
-    MOD  shift, and go to state 34
-
-    $default  reduce using rule 16 (expr_pm)
+    $default  reduce using rule 40 (factor)
 
 
 State 43
 
-   17 expr_pm: expr_pm MINUS expr_mdm .
-   19 expr_mdm: expr_mdm . MUL factor
-   20         | expr_mdm . DIV factor
-   21         | expr_mdm . MOD factor
+   39 factor: OP expr_a . CP
 
-    MUL  shift, and go to state 32
-    DIV  shift, and go to state 33
-    MOD  shift, and go to state 34
-
-    $default  reduce using rule 17 (expr_pm)
+    CP  shift, and go to state 65
 
 
 State 44
 
-   19 expr_mdm: expr_mdm MUL factor .
+   13 stmt: expr_a ';' .
 
-    $default  reduce using rule 19 (expr_mdm)
+    $default  reduce using rule 13 (stmt)
 
 
 State 45
 
-   20 expr_mdm: expr_mdm DIV factor .
+   21 expr_or: expr_or OR . expr_and
 
-    $default  reduce using rule 20 (expr_mdm)
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_and  go to state 66
+    expr_eq   go to state 27
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 46
 
-   21 expr_mdm: expr_mdm MOD factor .
+   23 expr_and: expr_and AND . expr_eq
 
-    $default  reduce using rule 21 (expr_mdm)
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_eq   go to state 67
+    expr_rel  go to state 28
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 47
 
-    6 stmt: IF OP expr_a CP . stmt
+   26 expr_eq: expr_eq NE . expr_rel
 
-    IF              shift, and go to state 8
-    ID              shift, and go to state 9
-    char_literal    shift, and go to state 10
-    string_literal  shift, and go to state 11
-    int_literal     shift, and go to state 12
-    OP              shift, and go to state 13
-    OB              shift, and go to state 5
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
 
-    block     go to state 15
-    stmt      go to state 48
-    expr_a    go to state 17
-    expr_c    go to state 18
-    expr_r    go to state 19
-    expr_pm   go to state 20
-    expr_mdm  go to state 21
-    factor    go to state 22
+    expr_rel  go to state 68
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
 
 
 State 48
 
-    6 stmt: IF OP expr_a CP stmt .
+   25 expr_eq: expr_eq EQ . expr_rel
 
-    $default  reduce using rule 6 (stmt)
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_rel  go to state 69
+    expr_pm   go to state 29
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 49
+
+   28 expr_rel: expr_rel LT . expr_pm
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_pm   go to state 70
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 50
+
+   29 expr_rel: expr_rel GT . expr_pm
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_pm   go to state 71
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 51
+
+   30 expr_rel: expr_rel LE . expr_pm
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_pm   go to state 72
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 52
+
+   31 expr_rel: expr_rel GE . expr_pm
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_pm   go to state 73
+    expr_mdm  go to state 30
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 53
+
+   33 expr_pm: expr_pm PLUS . expr_mdm
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_mdm  go to state 74
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 54
+
+   34 expr_pm: expr_pm MINUS . expr_mdm
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    expr_mdm  go to state 75
+    factor    go to state 31
+    literal   go to state 32
+
+
+State 55
+
+   36 expr_mdm: expr_mdm MUL . factor
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    factor   go to state 76
+    literal  go to state 32
+
+
+State 56
+
+   37 expr_mdm: expr_mdm DIV . factor
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    factor   go to state 77
+    literal  go to state 32
+
+
+State 57
+
+   38 expr_mdm: expr_mdm MOD . factor
+
+    ID              shift, and go to state 40
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+
+    factor   go to state 78
+    literal  go to state 32
+
+
+State 58
+
+    9 feild_decl: INT ID ASS . literal ';'
+
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+
+    literal  go to state 79
+
+
+State 59
+
+    8 feild_decl: INT ID ';' .
+
+    $default  reduce using rule 8 (feild_decl)
+
+
+State 60
+
+   10 method_decl: VOID ID .
+
+    $default  reduce using rule 10 (method_decl)
+
+
+State 61
+
+   14 stmt: IF OP expr_a . CP stmt
+
+    CP  shift, and go to state 80
+
+
+State 62
+
+   17 expr_a: ID ASS expr_or .
+   21 expr_or: expr_or . OR expr_and
+
+    OR  shift, and go to state 45
+
+    $default  reduce using rule 17 (expr_a)
+
+
+State 63
+
+   18 expr_a: ID PASS expr_or .
+   21 expr_or: expr_or . OR expr_and
+
+    OR  shift, and go to state 45
+
+    $default  reduce using rule 18 (expr_a)
+
+
+State 64
+
+   19 expr_a: ID MASS expr_or .
+   21 expr_or: expr_or . OR expr_and
+
+    OR  shift, and go to state 45
+
+    $default  reduce using rule 19 (expr_a)
+
+
+State 65
+
+   39 factor: OP expr_a CP .
+
+    $default  reduce using rule 39 (factor)
+
+
+State 66
+
+   21 expr_or: expr_or OR expr_and .
+   23 expr_and: expr_and . AND expr_eq
+
+    AND  shift, and go to state 46
+
+    $default  reduce using rule 21 (expr_or)
+
+
+State 67
+
+   23 expr_and: expr_and AND expr_eq .
+   25 expr_eq: expr_eq . EQ expr_rel
+   26        | expr_eq . NE expr_rel
+
+    NE  shift, and go to state 47
+    EQ  shift, and go to state 48
+
+    $default  reduce using rule 23 (expr_and)
+
+
+State 68
+
+   26 expr_eq: expr_eq NE expr_rel .
+   28 expr_rel: expr_rel . LT expr_pm
+   29         | expr_rel . GT expr_pm
+   30         | expr_rel . LE expr_pm
+   31         | expr_rel . GE expr_pm
+
+    LT  shift, and go to state 49
+    GT  shift, and go to state 50
+    LE  shift, and go to state 51
+    GE  shift, and go to state 52
+
+    $default  reduce using rule 26 (expr_eq)
+
+
+State 69
+
+   25 expr_eq: expr_eq EQ expr_rel .
+   28 expr_rel: expr_rel . LT expr_pm
+   29         | expr_rel . GT expr_pm
+   30         | expr_rel . LE expr_pm
+   31         | expr_rel . GE expr_pm
+
+    LT  shift, and go to state 49
+    GT  shift, and go to state 50
+    LE  shift, and go to state 51
+    GE  shift, and go to state 52
+
+    $default  reduce using rule 25 (expr_eq)
+
+
+State 70
+
+   28 expr_rel: expr_rel LT expr_pm .
+   33 expr_pm: expr_pm . PLUS expr_mdm
+   34        | expr_pm . MINUS expr_mdm
+
+    PLUS   shift, and go to state 53
+    MINUS  shift, and go to state 54
+
+    $default  reduce using rule 28 (expr_rel)
+
+
+State 71
+
+   29 expr_rel: expr_rel GT expr_pm .
+   33 expr_pm: expr_pm . PLUS expr_mdm
+   34        | expr_pm . MINUS expr_mdm
+
+    PLUS   shift, and go to state 53
+    MINUS  shift, and go to state 54
+
+    $default  reduce using rule 29 (expr_rel)
+
+
+State 72
+
+   30 expr_rel: expr_rel LE expr_pm .
+   33 expr_pm: expr_pm . PLUS expr_mdm
+   34        | expr_pm . MINUS expr_mdm
+
+    PLUS   shift, and go to state 53
+    MINUS  shift, and go to state 54
+
+    $default  reduce using rule 30 (expr_rel)
+
+
+State 73
+
+   31 expr_rel: expr_rel GE expr_pm .
+   33 expr_pm: expr_pm . PLUS expr_mdm
+   34        | expr_pm . MINUS expr_mdm
+
+    PLUS   shift, and go to state 53
+    MINUS  shift, and go to state 54
+
+    $default  reduce using rule 31 (expr_rel)
+
+
+State 74
+
+   33 expr_pm: expr_pm PLUS expr_mdm .
+   36 expr_mdm: expr_mdm . MUL factor
+   37         | expr_mdm . DIV factor
+   38         | expr_mdm . MOD factor
+
+    MUL  shift, and go to state 55
+    DIV  shift, and go to state 56
+    MOD  shift, and go to state 57
+
+    $default  reduce using rule 33 (expr_pm)
+
+
+State 75
+
+   34 expr_pm: expr_pm MINUS expr_mdm .
+   36 expr_mdm: expr_mdm . MUL factor
+   37         | expr_mdm . DIV factor
+   38         | expr_mdm . MOD factor
+
+    MUL  shift, and go to state 55
+    DIV  shift, and go to state 56
+    MOD  shift, and go to state 57
+
+    $default  reduce using rule 34 (expr_pm)
+
+
+State 76
+
+   36 expr_mdm: expr_mdm MUL factor .
+
+    $default  reduce using rule 36 (expr_mdm)
+
+
+State 77
+
+   37 expr_mdm: expr_mdm DIV factor .
+
+    $default  reduce using rule 37 (expr_mdm)
+
+
+State 78
+
+   38 expr_mdm: expr_mdm MOD factor .
+
+    $default  reduce using rule 38 (expr_mdm)
+
+
+State 79
+
+    9 feild_decl: INT ID ASS literal . ';'
+
+    ';'  shift, and go to state 81
+
+
+State 80
+
+   14 stmt: IF OP expr_a CP . stmt
+
+    IF              shift, and go to state 12
+    ID              shift, and go to state 13
+    bool_literal    shift, and go to state 14
+    char_literal    shift, and go to state 15
+    string_literal  shift, and go to state 16
+    int_literal     shift, and go to state 17
+    MINUS           shift, and go to state 18
+    NOT             shift, and go to state 19
+    OP              shift, and go to state 20
+    OB              shift, and go to state 5
+
+    IF              [reduce using rule 5 (feild_decls)]
+    ID              [reduce using rule 5 (feild_decls)]
+    bool_literal    [reduce using rule 5 (feild_decls)]
+    char_literal    [reduce using rule 5 (feild_decls)]
+    string_literal  [reduce using rule 5 (feild_decls)]
+    int_literal     [reduce using rule 5 (feild_decls)]
+    MINUS           [reduce using rule 5 (feild_decls)]
+    NOT             [reduce using rule 5 (feild_decls)]
+    OP              [reduce using rule 5 (feild_decls)]
+    OB              [reduce using rule 5 (feild_decls)]
+    $default        reduce using rule 5 (feild_decls)
+
+    block        go to state 22
+    feild_decls  go to state 7
+    stmt         go to state 82
+    expr_a       go to state 24
+    expr_or      go to state 25
+    expr_and     go to state 26
+    expr_eq      go to state 27
+    expr_rel     go to state 28
+    expr_pm      go to state 29
+    expr_mdm     go to state 30
+    factor       go to state 31
+    literal      go to state 32
+
+
+State 81
+
+    9 feild_decl: INT ID ASS literal ';' .
+
+    $default  reduce using rule 9 (feild_decl)
+
+
+State 82
+
+   14 stmt: IF OP expr_a CP stmt .
+
+    $default  reduce using rule 14 (stmt)
