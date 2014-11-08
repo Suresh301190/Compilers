@@ -535,13 +535,13 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "sample.lex"
+#line 1 "sample.l"
 /*
- * Project Deliverable 1: Compilers
+ * Project Deliverable 3: Compilers
  * @author
  * Suresh Rangaswamy
  * MT13017
- * 15 September 2014
+ * 10 November 2014
  *
  * Added some of my own operators as well like unary_op to match (++|--),
  * const keyword, and C Pointers as well, like const char *c.
@@ -565,7 +565,7 @@ char *yytext;
  *  3. Implemented the precedence of operators in expressions.
  *  4. Made a few changes like using semicolon in for loop and some basic C syntax like structure.
  */
-#line 32 "sample.lex"
+#line 32 "sample.l"
 
 #include "y.tab.h"
 extern struct info* yylval;
@@ -576,7 +576,7 @@ extern struct info* yylval;
  */
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
-#define INIT(op)  { PRINT Init(&yylval, yytext); return op; }
+#define INIT(op)  { PRINT Init_PD2(&yylval, yytext); return op; }
 //#define PRINT     printf("%d. %s\n", counter++, yytext);
 #define PRINT
 
@@ -790,7 +790,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 101 "sample.lex"
+#line 101 "sample.l"
 
 #line 796 "lex.yy.c"
 
@@ -878,222 +878,222 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 102 "sample.lex"
+#line 102 "sample.l"
 /* skip these tokens */
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 103 "sample.lex"
+#line 103 "sample.l"
 RET(SEMCOL);
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 104 "sample.lex"
+#line 104 "sample.l"
 RET(COMMA)
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 105 "sample.lex"
+#line 105 "sample.l"
 RET(CLASS);
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 106 "sample.lex"
+#line 106 "sample.l"
 RET(PROGRAM);
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 107 "sample.lex"
+#line 107 "sample.l"
 RET(IF);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 108 "sample.lex"
+#line 108 "sample.l"
 RET(FOR);
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 109 "sample.lex"
+#line 109 "sample.l"
 RET(ELSE);
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 110 "sample.lex"
+#line 110 "sample.l"
 INIT(CONTINUE);
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 111 "sample.lex"
+#line 111 "sample.l"
 INIT(BREAK);
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 112 "sample.lex"
+#line 112 "sample.l"
 INIT(RETURN);
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 113 "sample.lex"
+#line 113 "sample.l"
 RET(INT);
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 114 "sample.lex"
+#line 114 "sample.l"
 RET(BOOL);
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 115 "sample.lex"
+#line 115 "sample.l"
 RET(VOID);
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 116 "sample.lex"
+#line 116 "sample.l"
 RET(CALLOUT);
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 117 "sample.lex"
+#line 117 "sample.l"
 RET(OP);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 118 "sample.lex"
+#line 118 "sample.l"
 RET(CP);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 119 "sample.lex"
+#line 119 "sample.l"
 RET(OB);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 120 "sample.lex"
+#line 120 "sample.l"
 RET(CB);
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 121 "sample.lex"
+#line 121 "sample.l"
 RET(OS);
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 122 "sample.lex"
+#line 122 "sample.l"
 RET(CS);
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 123 "sample.lex"
+#line 123 "sample.l"
 INIT(bool_literal);
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 124 "sample.lex"
+#line 124 "sample.l"
 INIT(char_literal);
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 125 "sample.lex"
+#line 125 "sample.l"
 INIT(int_literal);
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 126 "sample.lex"
+#line 126 "sample.l"
 INIT(string_literal);
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 127 "sample.lex"
+#line 127 "sample.l"
 INIT(ID);
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 128 "sample.lex"
+#line 128 "sample.l"
 RET(ASS);
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 129 "sample.lex"
+#line 129 "sample.l"
 RET(PASS);
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 130 "sample.lex"
+#line 130 "sample.l"
 RET(MASS);
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 131 "sample.lex"
+#line 131 "sample.l"
 RET(AND);
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 132 "sample.lex"
+#line 132 "sample.l"
 RET(OR);
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 133 "sample.lex"
+#line 133 "sample.l"
 RET(LT);
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 134 "sample.lex"
+#line 134 "sample.l"
 RET(LE);
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 135 "sample.lex"
+#line 135 "sample.l"
 RET(GT);
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 136 "sample.lex"
+#line 136 "sample.l"
 RET(GE);
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 137 "sample.lex"
+#line 137 "sample.l"
 RET(EQ);
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 138 "sample.lex"
+#line 138 "sample.l"
 RET(NE);
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 139 "sample.lex"
+#line 139 "sample.l"
 RET(PLUS);
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 140 "sample.lex"
+#line 140 "sample.l"
 RET(MINUS);
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 141 "sample.lex"
+#line 141 "sample.l"
 RET(MUL);
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 142 "sample.lex"
+#line 142 "sample.l"
 RET(DIV);
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 143 "sample.lex"
+#line 143 "sample.l"
 RET(MOD);
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 144 "sample.lex"
+#line 144 "sample.l"
 RET(NOT);
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 146 "sample.lex"
+#line 146 "sample.l"
 ECHO;
 	YY_BREAK
 #line 1100 "lex.yy.c"
@@ -2094,7 +2094,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 146 "sample.lex"
+#line 146 "sample.l"
 
 
 

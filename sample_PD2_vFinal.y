@@ -13,7 +13,7 @@ struct info {
 
 void yyerror (char const *s);
 
-void Init_PD2(struct info** x, char* y);
+void Init(struct info** x, char* y);
 void PrintTree (struct info* x);
 void Print (struct info* x, int l);
 void PrintTree2 (struct info* x);
@@ -37,13 +37,13 @@ void PrintTree2 (struct info* x);
 
 %%
 
-program	: CLASS PROGRAM	OB feild_methods CB {	Init_PD2 (&$$, "program");
+program	: CLASS PROGRAM	OB feild_methods CB {	Init (&$$, "program");
                                                 $$->firstChild = $4;
                                                 PrintTree2($$);
                                             }
     ;
 
-feild_methods    :   feild_methods  feild_method    {   Init_PD2(&$$, "feild_methods");
+feild_methods    :   feild_methods  feild_method    {   Init(&$$, "feild_methods");
                                                         if($1){
                                                             $$->firstChild = $1;
                                                             $1->nextSibling = $2;
@@ -54,7 +54,7 @@ feild_methods    :   feild_methods  feild_method    {   Init_PD2(&$$, "feild_met
     |       {   $$ = NULL; }
     ;
 
-feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
+feild_method    :   type ID OP args CP block {   Init(&$$, "method_decl");
                                 $$->firstChild = $2;
                                 if($4) {
                                     $2->nextSibling = $4;
@@ -63,7 +63,7 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                 else
                                     $2->nextSibling = $6;
                             }
-    |   VOID ID OP args CP block    {   Init_PD2(&$$, "method_decl");
+    |   VOID ID OP args CP block    {   Init(&$$, "method_decl");
                                         $$->firstChild = $2;
                                         if($4) {
                                             $2->nextSibling = $4;
@@ -72,33 +72,33 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                         else
                                             $2->nextSibling = $6;
                                     }
-    |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init_PD2(&$$, "feild_decl");
+    |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init(&$$, "feild_decl");
                                             $$->firstChild = $1;
                                             $1->nextSibling = $2;
                                             $2->nextSibling = $4;
                                             $4->nextSibling = $6;
                                         }
-    |   type ID ARR_IDS SEMCOL  {   Init_PD2(&$$, "feild_decl");
+    |   type ID ARR_IDS SEMCOL  {   Init(&$$, "feild_decl");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $2;
                                     $2->nextSibling = $3;
                                 }
-    |   type ID ASS literal SEMCOL  {   Init_PD2(&$$, "assign");
+    |   type ID ASS literal SEMCOL  {   Init(&$$, "assign");
                                         $$->firstChild = $1;
                                         $1->nextSibling = $2;
                                         $2->nextSibling = $4;
                                     }
     ;
 
-type    :   INT {   Init_PD2(&$$, "int");
+type    :   INT {   Init(&$$, "int");
                     $$->firstChild = $1;
                 }
-    |   BOOL    {   Init_PD2(&$$, "bool");
+    |   BOOL    {   Init(&$$, "bool");
                     $$->firstChild = $1;
                 }
     ;
 
-ARR_IDS :   COMMA ARR_ID ARR_IDS    {   Init_PD2(&$$, "feild");
+ARR_IDS :   COMMA ARR_ID ARR_IDS    {   Init(&$$, "feild");
                                         $$->firstChild = $2;
                                         $2->nextSibling = $3;
                                     }
@@ -108,14 +108,14 @@ ARR_IDS :   COMMA ARR_ID ARR_IDS    {   Init_PD2(&$$, "feild");
 
 ARR_ID  :   ID  {   $$ = $1;
                 }
-    |   ID OS int_literal CS    {   Init_PD2(&$$, "array");
+    |   ID OS int_literal CS    {   Init(&$$, "array");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $3;
                                     PrintTree($$);
                                 }
     ;
 
-args    :   arg args1   {   Init_PD2(&$$, "args");
+args    :   arg args1   {   Init(&$$, "args");
                             $$->firstChild = $1;
                             $1->nextSibling = $2;
                         }
@@ -123,7 +123,7 @@ args    :   arg args1   {   Init_PD2(&$$, "args");
             }
     ;
 
-args1   :   COMMA arg args1 {   Init_PD2(&$$, "args");
+args1   :   COMMA arg args1 {   Init(&$$, "args");
                                 $$->firstChild = $2;
                                 $2->nextSibling = $3;
                             }
@@ -131,15 +131,15 @@ args1   :   COMMA arg args1 {   Init_PD2(&$$, "args");
             }
     ;
 
-arg :   BOOL ID {   Init_PD2(&$$, "bool");
+arg :   BOOL ID {   Init(&$$, "bool");
                     $$->firstChild = $2;
                 }
-    |   INT ID  {   Init_PD2(&$$, "int");
+    |   INT ID  {   Init(&$$, "int");
                     $$->firstChild = $2;
                 }
     ;
 
-block   :   OB var_decls stmts CB   {   Init_PD2(&$$, "block");
+block   :   OB var_decls stmts CB   {   Init(&$$, "block");
                                         if($2){
                                             $$->firstChild = $2;
                                             $2->nextSibling = $3;
@@ -149,7 +149,7 @@ block   :   OB var_decls stmts CB   {   Init_PD2(&$$, "block");
                                     }
     ;
 
-var_decls   :   var_decls var_decl  {   Init_PD2(&$$, "var_decls");
+var_decls   :   var_decls var_decl  {   Init(&$$, "var_decls");
                                         if($1){
                                             $$->firstChild = $1;
                                             $1->nextSibling = $2;
@@ -161,13 +161,13 @@ var_decls   :   var_decls var_decl  {   Init_PD2(&$$, "var_decls");
             }
     ;
 
-var_decl    :   arg vars SEMCOL {   Init_PD2(&$$, "var_decl");
+var_decl    :   arg vars SEMCOL {   Init(&$$, "var_decl");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $2;
                                 }
     ;
 
-vars    :   COMMA var vars  {   Init_PD2(&$$, "var");
+vars    :   COMMA var vars  {   Init(&$$, "var");
                                 $$->firstChild = $2;
                                 $2->nextSibling = $3;
                             }
@@ -179,7 +179,7 @@ var :   ID  {   $$ = $1;
             }
     ;
 
-stmts	:	stmts stmt	{	Init_PD2 (&$$, "stmts");
+stmts	:	stmts stmt	{	Init (&$$, "stmts");
                             if ($1) {
                                 $$->firstChild = $1;
                                 $1->nextSibling = $2;
@@ -194,28 +194,28 @@ stmts	:	stmts stmt	{	Init_PD2 (&$$, "stmts");
     ;
 
 stmt	:	block    {   $$ = $1; }
-    |   expr_a SEMCOL	{	Init_PD2 (&$$, "eval");
+    |   expr_a SEMCOL	{	Init (&$$, "eval");
                             $$->firstChild = $1;
                             PrintTree($$);
                         }
-    |	IF OP expr_a CP block   {   Init_PD2 (&$$, "if");
+    |	IF OP expr_a CP block   {   Init (&$$, "if");
                                     $$->firstChild = $3;
                                     $3->nextSibling = $5;
                                     PrintTree($$);
                                 }
-    |	IF OP expr_a CP block ELSE block  {   Init_PD2 (&$$, "if");
+    |	IF OP expr_a CP block ELSE block  {   Init (&$$, "if");
                                     $$->firstChild = $3;
                                     $3->nextSibling = $5;
                                     $5->nextSibling = $7;
                                     PrintTree($$);
                                 }
-    |   FOR fexpr COMMA expr_a block  {   Init_PD2(&$$, "for");
+    |   FOR fexpr COMMA expr_a block  {   Init(&$$, "for");
                                         $$->firstChild = $2;
                                         $2->nextSibling = $4;
                                         $4->nextSibling = $5;
                                         PrintTree($$);
                                     }
-    |   RETURN Rexpr SEMCOL   {   Init_PD2(&$$, "return");
+    |   RETURN Rexpr SEMCOL   {   Init(&$$, "return");
                             $$->firstChild = $1;
                             $1->nextSibling = $2;
                         }
@@ -223,12 +223,12 @@ stmt	:	block    {   $$ = $1; }
                 }
     |   CONTINUE SEMCOL  {   $$ = $1;
                 }
-    |   method_call SEMCOL  {   Init_PD2(&$$, "method_call");
+    |   method_call SEMCOL  {   Init(&$$, "method_call");
                         $$->firstChild = $1;
     }
     ;
 
-method_call :   CALLOUT OP string_literal CP   {   Init_PD2(&$$, "callout");
+method_call :   CALLOUT OP string_literal CP   {   Init(&$$, "callout");
                                                     $$->firstChild = $3;
                                                     $3->nextSibling = $4;
         }
@@ -240,7 +240,7 @@ Rexpr   :   OP expr_a CP    {  $$ = $2;
     |       {   $$ = NULL;  }
     ;
 
-fexpr   :   ID ASS expr_a { Init_PD2(&$$, "assign");
+fexpr   :   ID ASS expr_a { Init(&$$, "assign");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                         }
@@ -248,32 +248,32 @@ fexpr   :   ID ASS expr_a { Init_PD2(&$$, "assign");
 
 expr_a    :   expr_or   {   $$ = $1;
                         }
-    |   ID ASS expr_or  {   Init_PD2(&$$, "assign_op");
+    |   ID ASS expr_or  {   Init(&$$, "assign_op");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                         }
-    |   ID PASS expr_or {   Init_PD2(&$$, "plus_eq");
+    |   ID PASS expr_or {   Init(&$$, "plus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                         }
-    |   ID MASS expr_or {   Init_PD2(&$$, "minus_eq");
+    |   ID MASS expr_or {   Init(&$$, "minus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                         }
-    |   ID OP expr_rec CP   {   Init_PD2(&$$, "method_call");
+    |   ID OP expr_rec CP   {   Init(&$$, "method_call");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
     ;
 
-expr_rec    :   expr_a  expr_rec2   {   Init_PD2(&$$, "args");
+expr_rec    :   expr_a  expr_rec2   {   Init(&$$, "args");
                                         $$->firstChild = $1;
                                         $1->nextSibling = $2;
                                     }
     |       {   $$ = NULL;  }
     ;
 
-expr_rec2   :   COMMA expr_a expr_rec2  {   Init_PD2(&$$, "args");
+expr_rec2   :   COMMA expr_a expr_rec2  {   Init(&$$, "args");
                                             $$->firstChild = $2;
                                             $2->nextSibling = $3;
     }
@@ -282,7 +282,7 @@ expr_rec2   :   COMMA expr_a expr_rec2  {   Init_PD2(&$$, "args");
 
 expr_or :   expr_and    {   $$ = $1;
                         }
-    |   expr_or OR expr_and {   Init_PD2(&$$, "cond_OR");
+    |   expr_or OR expr_and {   Init(&$$, "cond_OR");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
@@ -290,7 +290,7 @@ expr_or :   expr_and    {   $$ = $1;
 
 expr_and :   expr_eq    {   $$ = $1;
                         }
-    |   expr_and AND expr_eq    {   Init_PD2(&$$, "cond_AND");
+    |   expr_and AND expr_eq    {   Init(&$$, "cond_AND");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $3;
                                 }
@@ -298,11 +298,11 @@ expr_and :   expr_eq    {   $$ = $1;
 
 expr_eq :   expr_rel    {   $$ = $1;
                         }
-    |   expr_eq EQ expr_rel {   Init_PD2(&$$, "EQUAL");
+    |   expr_eq EQ expr_rel {   Init(&$$, "EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
-    |   expr_eq NE expr_rel {   Init_PD2(&$$, "NOT_EQUAL");
+    |   expr_eq NE expr_rel {   Init(&$$, "NOT_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
@@ -310,19 +310,19 @@ expr_eq :   expr_rel    {   $$ = $1;
 
 expr_rel :   expr_pm {   $$ = $1;
                     }
-    |   expr_rel LT expr_pm {   Init_PD2(&$$, "LESS_THAN");
+    |   expr_rel LT expr_pm {   Init(&$$, "LESS_THAN");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
-    |   expr_rel GT expr_pm {   Init_PD2(&$$, "GREATER_THAN");
+    |   expr_rel GT expr_pm {   Init(&$$, "GREATER_THAN");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
-    |   expr_rel LE expr_pm {   Init_PD2(&$$, "LESS_EQUAL");
+    |   expr_rel LE expr_pm {   Init(&$$, "LESS_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
-    |   expr_rel GE expr_pm {   Init_PD2(&$$, "GREATER_EQUAL");
+    |   expr_rel GE expr_pm {   Init(&$$, "GREATER_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
@@ -330,11 +330,11 @@ expr_rel :   expr_pm {   $$ = $1;
 
 expr_pm :   expr_mdm    {   $$ = $1;
                         }
-    |   expr_pm PLUS expr_mdm   {   Init_PD2(&$$, "plus");
+    |   expr_pm PLUS expr_mdm   {   Init(&$$, "plus");
                                         $$->firstChild = $1;
                                         $1->nextSibling = $3;
                                     }
-    |   expr_pm MINUS expr_mdm  {   Init_PD2(&$$, "minus");
+    |   expr_pm MINUS expr_mdm  {   Init(&$$, "minus");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $3;
                                 }
@@ -342,15 +342,15 @@ expr_pm :   expr_mdm    {   $$ = $1;
 
 expr_mdm    :   factor  {   $$ = $1;
                         }
-    |   expr_mdm MUL factor {   Init_PD2(&$$, "mul");
+    |   expr_mdm MUL factor {   Init(&$$, "mul");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
-    |   expr_mdm DIV factor {   Init_PD2(&$$, "div");
+    |   expr_mdm DIV factor {   Init(&$$, "div");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
-    |   expr_mdm MOD factor {   Init_PD2(&$$, "mod");
+    |   expr_mdm MOD factor {   Init(&$$, "mod");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
@@ -358,15 +358,15 @@ expr_mdm    :   factor  {   $$ = $1;
 
 factor  :	OP expr_a CP	{	$$ = $2;
                             }
-    |	NOT factor %prec NOT    {	Init_PD2 (&$$, "cond_NOT");
+    |	NOT factor %prec NOT    {	Init (&$$, "cond_NOT");
                                     $$->firstChild = $2;
                                 }
-    |	MINUS factor %prec UMINUS   {	Init_PD2 (&$$, "NEG");
+    |	MINUS factor %prec UMINUS   {	Init (&$$, "NEG");
                                         $$->firstChild = $2;
                                     }
     |	literal		{	$$ = $1;
                     }
-    |   ID OS expr_a CS {   Init_PD2(&$$, "array");
+    |   ID OS expr_a CS {   Init(&$$, "array");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                         }
@@ -393,12 +393,12 @@ void yyerror (char const *s) {
    fprintf (stderr, "%s\n", s);
  }
 
-void Init_PD2 (struct info** x, char* type) {
+void Init (struct info** x, char* type) {
     *x = (struct info*) malloc (sizeof(struct info));
     strcpy((*x)->type, type);
     (*x)->firstChild = NULL;
     (*x)->nextSibling = NULL;
-}//Init_PD2
+}//Init
 
 void PrintTree2 (struct info* x) {
     printf("********************\n");
