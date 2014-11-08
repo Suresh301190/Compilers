@@ -6,17 +6,13 @@ class Program{
 	int main( int i, bool b){
 		int x, y, z;
 		x = 5;
-		{
-			
-		}
 
 		if(x == y){
 			z = false;
-			break;
 		}
 
-		for x=5, x < 7 {
-			z = z*5;
+		for( x = 5; z == y) {
+
 		}
 
 		return (0);

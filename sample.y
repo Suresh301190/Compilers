@@ -147,7 +147,7 @@ arg :   BOOL ID {   Init(&$$, "bool");
 block   :   OB var_decls stmts CB   {   Init(&$$, "block");
                                         if($2){
                                             $$->firstChild = $2;
-                                            $2->firstChild = $3;
+                                            $2->nextSibling = $3;
                                         }
                                         else
                                             $$->firstChild = $3;
@@ -198,7 +198,8 @@ stmts	:	stmts stmt	{	Init (&$$, "stmts");
                 }
     ;
 
-stmt	:	expr_a SEMCOL	{	Init (&$$, "eval");
+stmt	:	block    {   $$ = $1; }
+    |   expr_a SEMCOL	{	Init (&$$, "eval");
                             $$->firstChild = $1;
                             PrintTree($$);
                         }
@@ -213,29 +214,37 @@ stmt	:	expr_a SEMCOL	{	Init (&$$, "eval");
                                     $5->nextSibling = $7;
                                     PrintTree($$);
                                 }
-    |   FOR OP fexpr SEMCOL expr_a CP block  {   Init(&$$, "for");
-                                        $$->firstChild = $3;
-                                        $3->nextSibling = $5;
-                                        $5->nextSibling = $7;
+    |   FOR fexpr COMMA expr_a block  {   Init(&$$, "for");
+                                        $$->firstChild = $2;
+                                        $2->nextSibling = $4;
+                                        $4->nextSibling = $5;
                                         PrintTree($$);
                                     }
     |   RETURN Rexpr SEMCOL   {   Init(&$$, "return");
                             $$->firstChild = $1;
                             $1->nextSibling = $2;
                         }
-    |   BREAK   {  $$ = $1;
+    |   BREAK SEMCOL  {  $$ = $1;
                 }
-    |   CONTINUE   {   $$ = $1;
+    |   CONTINUE SEMCOL  {   $$ = $1;
                 }
     |   method_call SEMCOL  {   Init(&$$, "method_call");
                         $$->firstChild = $1;
     }
     ;
 
-method_call :   CALLOUT OP string_literal CP   {   Init(&$$, "callout");
+method_call :   CALLOUT OP string_literal callout_args CP   {   Init(&$$, "callout");
                                                     $$->firstChild = $3;
                                                     $3->nextSibling = $4;
         }
+    ;
+
+callout_args    :   COMMA callout_arg callout_args  {   }
+    |       {   $$ = NULL; }
+    ;
+
+callout_arg :   string_literal  {   }
+    |   expr_a  {   }
     ;
 
 Rexpr   :   OP expr_a CP    {  $$ = $2;

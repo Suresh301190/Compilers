@@ -1,0 +1,1749 @@
+Terminals unused in grammar
+
+   '+'
+   '*'
+   '/'
+
+
+State 5 conflicts: 1 reduce/reduce
+State 33 conflicts: 1 reduce/reduce
+State 36 conflicts: 1 reduce/reduce
+State 57 conflicts: 1 reduce/reduce
+State 105 conflicts: 4 shift/reduce
+State 107 conflicts: 5 shift/reduce
+State 126 conflicts: 5 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: CLASS PROGRAM '{' field_decls '}'
+    2        | CLASS PROGRAM '{' method_decls '}'
+
+    3 field_decls: type id next_field_decls ';' field_decls
+    4            | type id '[' int_literal ']' next_field_decls ';' field_decls
+    5            | type id next_field_decls ';' method_decls
+    6            | type id '[' int_literal ']' next_field_decls ';' method_decls
+    7            | type id assign_op literal ';' field_decls
+    8            | type id assign_op literal ';' method_decls
+    9            | %empty
+
+   10 next_field_decls: ',' id next_field_decls
+   11                 | ',' id '[' int_literal ']' next_field_decls
+   12                 | %empty
+
+   13 method_decls: type id '(' method_args ')' block method_decls
+   14             | VOID id '(' method_args ')' block method_decls
+   15             | %empty
+
+   16 method_args: type id next_method_args
+   17            | %empty
+
+   18 next_method_args: ',' type id next_method_args
+   19                 | %empty
+
+   20 block: '{' var_decls statements '}'
+
+   21 var_decls: type id next_ids ';' var_decls
+   22          | %empty
+
+   23 next_ids: ',' id next_ids
+   24         | %empty
+
+   25 statements: statement statements
+   26           | %empty
+
+   27 statement: location assign_op expr ';'
+   28          | method_call ';'
+   29          | IF '(' expr ')' block
+   30          | IF '(' expr ')' block ELSE block
+   31          | FOR id '=' expr ',' expr block
+   32          | RETURN ';'
+   33          | RETURN expr ';'
+   34          | BREAK ';'
+   35          | CONTINUE ';'
+   36          | block
+
+   37 method_call: id '(' call_args ')'
+   38            | CALLOUT '(' string_literal callout_args ')'
+
+   39 call_args: expr next_call_args
+   40          | %empty
+
+   41 next_call_args: ',' expr next_call_args
+   42               | %empty
+
+   43 callout_args: ',' string_literal callout_args
+   44             | ',' expr callout_args
+   45             | %empty
+
+   46 location: id
+   47         | id '[' expr ']'
+
+   48 expr: location
+   49     | method_call
+   50     | '-' expr
+   51     | expr bin_op expr
+   52     | '!' expr
+   53     | '(' expr ')'
+   54     | literal
+
+   55 bin_op: arith_op
+   56       | '-'
+   57       | rel_op
+   58       | eq_op
+   59       | cond_op
+
+   60 literal: int_literal
+   61        | char_literal
+   62        | bool_literal
+
+   63 int_literal: decimal_literal
+   64            | hex_literal
+
+   65 type: INT
+   66     | BOOL
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'!' (33) 52
+'(' (40) 13 14 29 30 37 38 53
+')' (41) 13 14 29 30 37 38 53
+'*' (42)
+'+' (43)
+',' (44) 10 11 18 23 31 41 43 44
+'-' (45) 50 56
+'/' (47)
+';' (59) 3 4 5 6 7 8 21 27 28 32 33 34 35
+'=' (61) 31
+'[' (91) 4 6 11 47
+']' (93) 4 6 11 47
+'{' (123) 1 2 20
+'}' (125) 1 2 20
+error (256)
+hex_literal (258) 64
+id (259) 3 4 5 6 7 8 10 11 13 14 16 18 21 23 31 37 46 47
+string_literal (260) 38 43
+char_literal (261) 61
+decimal_literal (262) 63
+bool_literal (263) 62
+assign_op (264) 7 8 27
+arith_op (265) 55
+eq_op (266) 58
+rel_op (267) 57
+cond_op (268) 59
+CLASS (269) 1 2
+PROGRAM (270) 1 2
+VOID (271) 14
+IF (272) 29 30
+ELSE (273) 30
+FOR (274) 31
+RETURN (275) 32 33
+BREAK (276) 34
+CONTINUE (277) 35
+CALLOUT (278) 38
+INT (279) 65
+BOOL (280) 66
+UMINUS (281)
+
+
+Nonterminals, with rules where they appear
+
+$accept (41)
+    on left: 0
+program (42)
+    on left: 1 2, on right: 0
+field_decls (43)
+    on left: 3 4 5 6 7 8 9, on right: 1 3 4 7
+next_field_decls (44)
+    on left: 10 11 12, on right: 3 4 5 6 10 11
+method_decls (45)
+    on left: 13 14 15, on right: 2 5 6 8 13 14
+method_args (46)
+    on left: 16 17, on right: 13 14
+next_method_args (47)
+    on left: 18 19, on right: 16 18
+block (48)
+    on left: 20, on right: 13 14 29 30 31 36
+var_decls (49)
+    on left: 21 22, on right: 20 21
+next_ids (50)
+    on left: 23 24, on right: 21 23
+statements (51)
+    on left: 25 26, on right: 20 25
+statement (52)
+    on left: 27 28 29 30 31 32 33 34 35 36, on right: 25
+method_call (53)
+    on left: 37 38, on right: 28 49
+call_args (54)
+    on left: 39 40, on right: 37
+next_call_args (55)
+    on left: 41 42, on right: 39 41
+callout_args (56)
+    on left: 43 44 45, on right: 38 43 44
+location (57)
+    on left: 46 47, on right: 27 48
+expr (58)
+    on left: 48 49 50 51 52 53 54, on right: 27 29 30 31 33 39 41 44
+    47 50 51 52 53
+bin_op (59)
+    on left: 55 56 57 58 59, on right: 51
+literal (60)
+    on left: 60 61 62, on right: 7 8 54
+int_literal (61)
+    on left: 63 64, on right: 4 6 11 60
+type (62)
+    on left: 65 66, on right: 3 4 5 6 7 8 13 16 18 21
+
+
+State 0
+
+    0 $accept: . program $end
+
+    CLASS  shift, and go to state 1
+
+    program  go to state 2
+
+
+State 1
+
+    1 program: CLASS . PROGRAM '{' field_decls '}'
+    2        | CLASS . PROGRAM '{' method_decls '}'
+
+    PROGRAM  shift, and go to state 3
+
+
+State 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 4
+
+
+State 3
+
+    1 program: CLASS PROGRAM . '{' field_decls '}'
+    2        | CLASS PROGRAM . '{' method_decls '}'
+
+    '{'  shift, and go to state 5
+
+
+State 4
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 5
+
+    1 program: CLASS PROGRAM '{' . field_decls '}'
+    2        | CLASS PROGRAM '{' . method_decls '}'
+
+    VOID  shift, and go to state 6
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    '}'       reduce using rule 9 (field_decls)
+    '}'       [reduce using rule 15 (method_decls)]
+    $default  reduce using rule 9 (field_decls)
+
+    field_decls   go to state 9
+    method_decls  go to state 10
+    type          go to state 11
+
+
+State 6
+
+   14 method_decls: VOID . id '(' method_args ')' block method_decls
+
+    id  shift, and go to state 12
+
+
+State 7
+
+   65 type: INT .
+
+    $default  reduce using rule 65 (type)
+
+
+State 8
+
+   66 type: BOOL .
+
+    $default  reduce using rule 66 (type)
+
+
+State 9
+
+    1 program: CLASS PROGRAM '{' field_decls . '}'
+
+    '}'  shift, and go to state 13
+
+
+State 10
+
+    2 program: CLASS PROGRAM '{' method_decls . '}'
+
+    '}'  shift, and go to state 14
+
+
+State 11
+
+    3 field_decls: type . id next_field_decls ';' field_decls
+    4            | type . id '[' int_literal ']' next_field_decls ';' field_decls
+    5            | type . id next_field_decls ';' method_decls
+    6            | type . id '[' int_literal ']' next_field_decls ';' method_decls
+    7            | type . id assign_op literal ';' field_decls
+    8            | type . id assign_op literal ';' method_decls
+   13 method_decls: type . id '(' method_args ')' block method_decls
+
+    id  shift, and go to state 15
+
+
+State 12
+
+   14 method_decls: VOID id . '(' method_args ')' block method_decls
+
+    '('  shift, and go to state 16
+
+
+State 13
+
+    1 program: CLASS PROGRAM '{' field_decls '}' .
+
+    $default  reduce using rule 1 (program)
+
+
+State 14
+
+    2 program: CLASS PROGRAM '{' method_decls '}' .
+
+    $default  reduce using rule 2 (program)
+
+
+State 15
+
+    3 field_decls: type id . next_field_decls ';' field_decls
+    4            | type id . '[' int_literal ']' next_field_decls ';' field_decls
+    5            | type id . next_field_decls ';' method_decls
+    6            | type id . '[' int_literal ']' next_field_decls ';' method_decls
+    7            | type id . assign_op literal ';' field_decls
+    8            | type id . assign_op literal ';' method_decls
+   13 method_decls: type id . '(' method_args ')' block method_decls
+
+    assign_op  shift, and go to state 17
+    '['        shift, and go to state 18
+    ','        shift, and go to state 19
+    '('        shift, and go to state 20
+
+    $default  reduce using rule 12 (next_field_decls)
+
+    next_field_decls  go to state 21
+
+
+State 16
+
+   14 method_decls: VOID id '(' . method_args ')' block method_decls
+
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    $default  reduce using rule 17 (method_args)
+
+    method_args  go to state 22
+    type         go to state 23
+
+
+State 17
+
+    7 field_decls: type id assign_op . literal ';' field_decls
+    8            | type id assign_op . literal ';' method_decls
+
+    hex_literal      shift, and go to state 24
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+
+    literal      go to state 28
+    int_literal  go to state 29
+
+
+State 18
+
+    4 field_decls: type id '[' . int_literal ']' next_field_decls ';' field_decls
+    6            | type id '[' . int_literal ']' next_field_decls ';' method_decls
+
+    hex_literal      shift, and go to state 24
+    decimal_literal  shift, and go to state 26
+
+    int_literal  go to state 30
+
+
+State 19
+
+   10 next_field_decls: ',' . id next_field_decls
+   11                 | ',' . id '[' int_literal ']' next_field_decls
+
+    id  shift, and go to state 31
+
+
+State 20
+
+   13 method_decls: type id '(' . method_args ')' block method_decls
+
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    $default  reduce using rule 17 (method_args)
+
+    method_args  go to state 32
+    type         go to state 23
+
+
+State 21
+
+    3 field_decls: type id next_field_decls . ';' field_decls
+    5            | type id next_field_decls . ';' method_decls
+
+    ';'  shift, and go to state 33
+
+
+State 22
+
+   14 method_decls: VOID id '(' method_args . ')' block method_decls
+
+    ')'  shift, and go to state 34
+
+
+State 23
+
+   16 method_args: type . id next_method_args
+
+    id  shift, and go to state 35
+
+
+State 24
+
+   64 int_literal: hex_literal .
+
+    $default  reduce using rule 64 (int_literal)
+
+
+State 25
+
+   61 literal: char_literal .
+
+    $default  reduce using rule 61 (literal)
+
+
+State 26
+
+   63 int_literal: decimal_literal .
+
+    $default  reduce using rule 63 (int_literal)
+
+
+State 27
+
+   62 literal: bool_literal .
+
+    $default  reduce using rule 62 (literal)
+
+
+State 28
+
+    7 field_decls: type id assign_op literal . ';' field_decls
+    8            | type id assign_op literal . ';' method_decls
+
+    ';'  shift, and go to state 36
+
+
+State 29
+
+   60 literal: int_literal .
+
+    $default  reduce using rule 60 (literal)
+
+
+State 30
+
+    4 field_decls: type id '[' int_literal . ']' next_field_decls ';' field_decls
+    6            | type id '[' int_literal . ']' next_field_decls ';' method_decls
+
+    ']'  shift, and go to state 37
+
+
+State 31
+
+   10 next_field_decls: ',' id . next_field_decls
+   11                 | ',' id . '[' int_literal ']' next_field_decls
+
+    '['  shift, and go to state 38
+    ','  shift, and go to state 19
+
+    $default  reduce using rule 12 (next_field_decls)
+
+    next_field_decls  go to state 39
+
+
+State 32
+
+   13 method_decls: type id '(' method_args . ')' block method_decls
+
+    ')'  shift, and go to state 40
+
+
+State 33
+
+    3 field_decls: type id next_field_decls ';' . field_decls
+    5            | type id next_field_decls ';' . method_decls
+
+    VOID  shift, and go to state 6
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    '}'       reduce using rule 9 (field_decls)
+    '}'       [reduce using rule 15 (method_decls)]
+    $default  reduce using rule 9 (field_decls)
+
+    field_decls   go to state 41
+    method_decls  go to state 42
+    type          go to state 11
+
+
+State 34
+
+   14 method_decls: VOID id '(' method_args ')' . block method_decls
+
+    '{'  shift, and go to state 43
+
+    block  go to state 44
+
+
+State 35
+
+   16 method_args: type id . next_method_args
+
+    ','  shift, and go to state 45
+
+    $default  reduce using rule 19 (next_method_args)
+
+    next_method_args  go to state 46
+
+
+State 36
+
+    7 field_decls: type id assign_op literal ';' . field_decls
+    8            | type id assign_op literal ';' . method_decls
+
+    VOID  shift, and go to state 6
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    '}'       reduce using rule 9 (field_decls)
+    '}'       [reduce using rule 15 (method_decls)]
+    $default  reduce using rule 9 (field_decls)
+
+    field_decls   go to state 47
+    method_decls  go to state 48
+    type          go to state 11
+
+
+State 37
+
+    4 field_decls: type id '[' int_literal ']' . next_field_decls ';' field_decls
+    6            | type id '[' int_literal ']' . next_field_decls ';' method_decls
+
+    ','  shift, and go to state 19
+
+    $default  reduce using rule 12 (next_field_decls)
+
+    next_field_decls  go to state 49
+
+
+State 38
+
+   11 next_field_decls: ',' id '[' . int_literal ']' next_field_decls
+
+    hex_literal      shift, and go to state 24
+    decimal_literal  shift, and go to state 26
+
+    int_literal  go to state 50
+
+
+State 39
+
+   10 next_field_decls: ',' id next_field_decls .
+
+    $default  reduce using rule 10 (next_field_decls)
+
+
+State 40
+
+   13 method_decls: type id '(' method_args ')' . block method_decls
+
+    '{'  shift, and go to state 43
+
+    block  go to state 51
+
+
+State 41
+
+    3 field_decls: type id next_field_decls ';' field_decls .
+
+    $default  reduce using rule 3 (field_decls)
+
+
+State 42
+
+    5 field_decls: type id next_field_decls ';' method_decls .
+
+    $default  reduce using rule 5 (field_decls)
+
+
+State 43
+
+   20 block: '{' . var_decls statements '}'
+
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    $default  reduce using rule 22 (var_decls)
+
+    var_decls  go to state 52
+    type       go to state 53
+
+
+State 44
+
+   14 method_decls: VOID id '(' method_args ')' block . method_decls
+
+    VOID  shift, and go to state 6
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    $default  reduce using rule 15 (method_decls)
+
+    method_decls  go to state 54
+    type          go to state 55
+
+
+State 45
+
+   18 next_method_args: ',' . type id next_method_args
+
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    type  go to state 56
+
+
+State 46
+
+   16 method_args: type id next_method_args .
+
+    $default  reduce using rule 16 (method_args)
+
+
+State 47
+
+    7 field_decls: type id assign_op literal ';' field_decls .
+
+    $default  reduce using rule 7 (field_decls)
+
+
+State 48
+
+    8 field_decls: type id assign_op literal ';' method_decls .
+
+    $default  reduce using rule 8 (field_decls)
+
+
+State 49
+
+    4 field_decls: type id '[' int_literal ']' next_field_decls . ';' field_decls
+    6            | type id '[' int_literal ']' next_field_decls . ';' method_decls
+
+    ';'  shift, and go to state 57
+
+
+State 50
+
+   11 next_field_decls: ',' id '[' int_literal . ']' next_field_decls
+
+    ']'  shift, and go to state 58
+
+
+State 51
+
+   13 method_decls: type id '(' method_args ')' block . method_decls
+
+    VOID  shift, and go to state 6
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    $default  reduce using rule 15 (method_decls)
+
+    method_decls  go to state 59
+    type          go to state 55
+
+
+State 52
+
+   20 block: '{' var_decls . statements '}'
+
+    id        shift, and go to state 60
+    IF        shift, and go to state 61
+    FOR       shift, and go to state 62
+    RETURN    shift, and go to state 63
+    BREAK     shift, and go to state 64
+    CONTINUE  shift, and go to state 65
+    CALLOUT   shift, and go to state 66
+    '{'       shift, and go to state 43
+
+    $default  reduce using rule 26 (statements)
+
+    block        go to state 67
+    statements   go to state 68
+    statement    go to state 69
+    method_call  go to state 70
+    location     go to state 71
+
+
+State 53
+
+   21 var_decls: type . id next_ids ';' var_decls
+
+    id  shift, and go to state 72
+
+
+State 54
+
+   14 method_decls: VOID id '(' method_args ')' block method_decls .
+
+    $default  reduce using rule 14 (method_decls)
+
+
+State 55
+
+   13 method_decls: type . id '(' method_args ')' block method_decls
+
+    id  shift, and go to state 73
+
+
+State 56
+
+   18 next_method_args: ',' type . id next_method_args
+
+    id  shift, and go to state 74
+
+
+State 57
+
+    4 field_decls: type id '[' int_literal ']' next_field_decls ';' . field_decls
+    6            | type id '[' int_literal ']' next_field_decls ';' . method_decls
+
+    VOID  shift, and go to state 6
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    '}'       reduce using rule 9 (field_decls)
+    '}'       [reduce using rule 15 (method_decls)]
+    $default  reduce using rule 9 (field_decls)
+
+    field_decls   go to state 75
+    method_decls  go to state 76
+    type          go to state 11
+
+
+State 58
+
+   11 next_field_decls: ',' id '[' int_literal ']' . next_field_decls
+
+    ','  shift, and go to state 19
+
+    $default  reduce using rule 12 (next_field_decls)
+
+    next_field_decls  go to state 77
+
+
+State 59
+
+   13 method_decls: type id '(' method_args ')' block method_decls .
+
+    $default  reduce using rule 13 (method_decls)
+
+
+State 60
+
+   37 method_call: id . '(' call_args ')'
+   46 location: id .
+   47         | id . '[' expr ']'
+
+    '['  shift, and go to state 78
+    '('  shift, and go to state 79
+
+    $default  reduce using rule 46 (location)
+
+
+State 61
+
+   29 statement: IF . '(' expr ')' block
+   30          | IF . '(' expr ')' block ELSE block
+
+    '('  shift, and go to state 80
+
+
+State 62
+
+   31 statement: FOR . id '=' expr ',' expr block
+
+    id  shift, and go to state 81
+
+
+State 63
+
+   32 statement: RETURN . ';'
+   33          | RETURN . expr ';'
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    ';'              shift, and go to state 83
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 88
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 64
+
+   34 statement: BREAK . ';'
+
+    ';'  shift, and go to state 90
+
+
+State 65
+
+   35 statement: CONTINUE . ';'
+
+    ';'  shift, and go to state 91
+
+
+State 66
+
+   38 method_call: CALLOUT . '(' string_literal callout_args ')'
+
+    '('  shift, and go to state 92
+
+
+State 67
+
+   36 statement: block .
+
+    $default  reduce using rule 36 (statement)
+
+
+State 68
+
+   20 block: '{' var_decls statements . '}'
+
+    '}'  shift, and go to state 93
+
+
+State 69
+
+   25 statements: statement . statements
+
+    id        shift, and go to state 60
+    IF        shift, and go to state 61
+    FOR       shift, and go to state 62
+    RETURN    shift, and go to state 63
+    BREAK     shift, and go to state 64
+    CONTINUE  shift, and go to state 65
+    CALLOUT   shift, and go to state 66
+    '{'       shift, and go to state 43
+
+    $default  reduce using rule 26 (statements)
+
+    block        go to state 67
+    statements   go to state 94
+    statement    go to state 69
+    method_call  go to state 70
+    location     go to state 71
+
+
+State 70
+
+   28 statement: method_call . ';'
+
+    ';'  shift, and go to state 95
+
+
+State 71
+
+   27 statement: location . assign_op expr ';'
+
+    assign_op  shift, and go to state 96
+
+
+State 72
+
+   21 var_decls: type id . next_ids ';' var_decls
+
+    ','  shift, and go to state 97
+
+    $default  reduce using rule 24 (next_ids)
+
+    next_ids  go to state 98
+
+
+State 73
+
+   13 method_decls: type id . '(' method_args ')' block method_decls
+
+    '('  shift, and go to state 20
+
+
+State 74
+
+   18 next_method_args: ',' type id . next_method_args
+
+    ','  shift, and go to state 45
+
+    $default  reduce using rule 19 (next_method_args)
+
+    next_method_args  go to state 99
+
+
+State 75
+
+    4 field_decls: type id '[' int_literal ']' next_field_decls ';' field_decls .
+
+    $default  reduce using rule 4 (field_decls)
+
+
+State 76
+
+    6 field_decls: type id '[' int_literal ']' next_field_decls ';' method_decls .
+
+    $default  reduce using rule 6 (field_decls)
+
+
+State 77
+
+   11 next_field_decls: ',' id '[' int_literal ']' next_field_decls .
+
+    $default  reduce using rule 11 (next_field_decls)
+
+
+State 78
+
+   47 location: id '[' . expr ']'
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 100
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 79
+
+   37 method_call: id '(' . call_args ')'
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    $default  reduce using rule 40 (call_args)
+
+    method_call  go to state 86
+    call_args    go to state 101
+    location     go to state 87
+    expr         go to state 102
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 80
+
+   29 statement: IF '(' . expr ')' block
+   30          | IF '(' . expr ')' block ELSE block
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 103
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 81
+
+   31 statement: FOR id . '=' expr ',' expr block
+
+    '='  shift, and go to state 104
+
+
+State 82
+
+   50 expr: '-' . expr
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 105
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 83
+
+   32 statement: RETURN ';' .
+
+    $default  reduce using rule 32 (statement)
+
+
+State 84
+
+   53 expr: '(' . expr ')'
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 106
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 85
+
+   52 expr: '!' . expr
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 107
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 86
+
+   49 expr: method_call .
+
+    $default  reduce using rule 49 (expr)
+
+
+State 87
+
+   48 expr: location .
+
+    $default  reduce using rule 48 (expr)
+
+
+State 88
+
+   33 statement: RETURN expr . ';'
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ';'       shift, and go to state 113
+
+    bin_op  go to state 114
+
+
+State 89
+
+   54 expr: literal .
+
+    $default  reduce using rule 54 (expr)
+
+
+State 90
+
+   34 statement: BREAK ';' .
+
+    $default  reduce using rule 34 (statement)
+
+
+State 91
+
+   35 statement: CONTINUE ';' .
+
+    $default  reduce using rule 35 (statement)
+
+
+State 92
+
+   38 method_call: CALLOUT '(' . string_literal callout_args ')'
+
+    string_literal  shift, and go to state 115
+
+
+State 93
+
+   20 block: '{' var_decls statements '}' .
+
+    $default  reduce using rule 20 (block)
+
+
+State 94
+
+   25 statements: statement statements .
+
+    $default  reduce using rule 25 (statements)
+
+
+State 95
+
+   28 statement: method_call ';' .
+
+    $default  reduce using rule 28 (statement)
+
+
+State 96
+
+   27 statement: location assign_op . expr ';'
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 116
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 97
+
+   23 next_ids: ',' . id next_ids
+
+    id  shift, and go to state 117
+
+
+State 98
+
+   21 var_decls: type id next_ids . ';' var_decls
+
+    ';'  shift, and go to state 118
+
+
+State 99
+
+   18 next_method_args: ',' type id next_method_args .
+
+    $default  reduce using rule 18 (next_method_args)
+
+
+State 100
+
+   47 location: id '[' expr . ']'
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ']'       shift, and go to state 119
+
+    bin_op  go to state 114
+
+
+State 101
+
+   37 method_call: id '(' call_args . ')'
+
+    ')'  shift, and go to state 120
+
+
+State 102
+
+   39 call_args: expr . next_call_args
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ','       shift, and go to state 121
+
+    $default  reduce using rule 42 (next_call_args)
+
+    next_call_args  go to state 122
+    bin_op          go to state 114
+
+
+State 103
+
+   29 statement: IF '(' expr . ')' block
+   30          | IF '(' expr . ')' block ELSE block
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ')'       shift, and go to state 123
+
+    bin_op  go to state 114
+
+
+State 104
+
+   31 statement: FOR id '=' . expr ',' expr block
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 124
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 105
+
+   50 expr: '-' expr .
+   51     | expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+
+    arith_op  [reduce using rule 50 (expr)]
+    eq_op     [reduce using rule 50 (expr)]
+    rel_op    [reduce using rule 50 (expr)]
+    cond_op   [reduce using rule 50 (expr)]
+    $default  reduce using rule 50 (expr)
+
+    bin_op  go to state 114
+
+
+State 106
+
+   51 expr: expr . bin_op expr
+   53     | '(' expr . ')'
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ')'       shift, and go to state 125
+
+    bin_op  go to state 114
+
+
+State 107
+
+   51 expr: expr . bin_op expr
+   52     | '!' expr .
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+
+    arith_op  [reduce using rule 52 (expr)]
+    eq_op     [reduce using rule 52 (expr)]
+    rel_op    [reduce using rule 52 (expr)]
+    cond_op   [reduce using rule 52 (expr)]
+    '-'       [reduce using rule 52 (expr)]
+    $default  reduce using rule 52 (expr)
+
+    bin_op  go to state 114
+
+
+State 108
+
+   55 bin_op: arith_op .
+
+    $default  reduce using rule 55 (bin_op)
+
+
+State 109
+
+   58 bin_op: eq_op .
+
+    $default  reduce using rule 58 (bin_op)
+
+
+State 110
+
+   57 bin_op: rel_op .
+
+    $default  reduce using rule 57 (bin_op)
+
+
+State 111
+
+   59 bin_op: cond_op .
+
+    $default  reduce using rule 59 (bin_op)
+
+
+State 112
+
+   56 bin_op: '-' .
+
+    $default  reduce using rule 56 (bin_op)
+
+
+State 113
+
+   33 statement: RETURN expr ';' .
+
+    $default  reduce using rule 33 (statement)
+
+
+State 114
+
+   51 expr: expr bin_op . expr
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 126
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 115
+
+   38 method_call: CALLOUT '(' string_literal . callout_args ')'
+
+    ','  shift, and go to state 127
+
+    $default  reduce using rule 45 (callout_args)
+
+    callout_args  go to state 128
+
+
+State 116
+
+   27 statement: location assign_op expr . ';'
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ';'       shift, and go to state 129
+
+    bin_op  go to state 114
+
+
+State 117
+
+   23 next_ids: ',' id . next_ids
+
+    ','  shift, and go to state 97
+
+    $default  reduce using rule 24 (next_ids)
+
+    next_ids  go to state 130
+
+
+State 118
+
+   21 var_decls: type id next_ids ';' . var_decls
+
+    INT   shift, and go to state 7
+    BOOL  shift, and go to state 8
+
+    $default  reduce using rule 22 (var_decls)
+
+    var_decls  go to state 131
+    type       go to state 53
+
+
+State 119
+
+   47 location: id '[' expr ']' .
+
+    $default  reduce using rule 47 (location)
+
+
+State 120
+
+   37 method_call: id '(' call_args ')' .
+
+    $default  reduce using rule 37 (method_call)
+
+
+State 121
+
+   41 next_call_args: ',' . expr next_call_args
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 132
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 122
+
+   39 call_args: expr next_call_args .
+
+    $default  reduce using rule 39 (call_args)
+
+
+State 123
+
+   29 statement: IF '(' expr ')' . block
+   30          | IF '(' expr ')' . block ELSE block
+
+    '{'  shift, and go to state 43
+
+    block  go to state 133
+
+
+State 124
+
+   31 statement: FOR id '=' expr . ',' expr block
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ','       shift, and go to state 134
+
+    bin_op  go to state 114
+
+
+State 125
+
+   53 expr: '(' expr ')' .
+
+    $default  reduce using rule 53 (expr)
+
+
+State 126
+
+   51 expr: expr . bin_op expr
+   51     | expr bin_op expr .
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+
+    arith_op  [reduce using rule 51 (expr)]
+    eq_op     [reduce using rule 51 (expr)]
+    rel_op    [reduce using rule 51 (expr)]
+    cond_op   [reduce using rule 51 (expr)]
+    '-'       [reduce using rule 51 (expr)]
+    $default  reduce using rule 51 (expr)
+
+    bin_op  go to state 114
+
+
+State 127
+
+   43 callout_args: ',' . string_literal callout_args
+   44             | ',' . expr callout_args
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    string_literal   shift, and go to state 135
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 136
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 128
+
+   38 method_call: CALLOUT '(' string_literal callout_args . ')'
+
+    ')'  shift, and go to state 137
+
+
+State 129
+
+   27 statement: location assign_op expr ';' .
+
+    $default  reduce using rule 27 (statement)
+
+
+State 130
+
+   23 next_ids: ',' id next_ids .
+
+    $default  reduce using rule 23 (next_ids)
+
+
+State 131
+
+   21 var_decls: type id next_ids ';' var_decls .
+
+    $default  reduce using rule 21 (var_decls)
+
+
+State 132
+
+   41 next_call_args: ',' expr . next_call_args
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ','       shift, and go to state 121
+
+    $default  reduce using rule 42 (next_call_args)
+
+    next_call_args  go to state 138
+    bin_op          go to state 114
+
+
+State 133
+
+   29 statement: IF '(' expr ')' block .
+   30          | IF '(' expr ')' block . ELSE block
+
+    ELSE  shift, and go to state 139
+
+    $default  reduce using rule 29 (statement)
+
+
+State 134
+
+   31 statement: FOR id '=' expr ',' . expr block
+
+    hex_literal      shift, and go to state 24
+    id               shift, and go to state 60
+    char_literal     shift, and go to state 25
+    decimal_literal  shift, and go to state 26
+    bool_literal     shift, and go to state 27
+    CALLOUT          shift, and go to state 66
+    '-'              shift, and go to state 82
+    '('              shift, and go to state 84
+    '!'              shift, and go to state 85
+
+    method_call  go to state 86
+    location     go to state 87
+    expr         go to state 140
+    literal      go to state 89
+    int_literal  go to state 29
+
+
+State 135
+
+   43 callout_args: ',' string_literal . callout_args
+
+    ','  shift, and go to state 127
+
+    $default  reduce using rule 45 (callout_args)
+
+    callout_args  go to state 141
+
+
+State 136
+
+   44 callout_args: ',' expr . callout_args
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    ','       shift, and go to state 127
+
+    $default  reduce using rule 45 (callout_args)
+
+    callout_args  go to state 142
+    bin_op        go to state 114
+
+
+State 137
+
+   38 method_call: CALLOUT '(' string_literal callout_args ')' .
+
+    $default  reduce using rule 38 (method_call)
+
+
+State 138
+
+   41 next_call_args: ',' expr next_call_args .
+
+    $default  reduce using rule 41 (next_call_args)
+
+
+State 139
+
+   30 statement: IF '(' expr ')' block ELSE . block
+
+    '{'  shift, and go to state 43
+
+    block  go to state 143
+
+
+State 140
+
+   31 statement: FOR id '=' expr ',' expr . block
+   51 expr: expr . bin_op expr
+
+    arith_op  shift, and go to state 108
+    eq_op     shift, and go to state 109
+    rel_op    shift, and go to state 110
+    cond_op   shift, and go to state 111
+    '-'       shift, and go to state 112
+    '{'       shift, and go to state 43
+
+    block   go to state 144
+    bin_op  go to state 114
+
+
+State 141
+
+   43 callout_args: ',' string_literal callout_args .
+
+    $default  reduce using rule 43 (callout_args)
+
+
+State 142
+
+   44 callout_args: ',' expr callout_args .
+
+    $default  reduce using rule 44 (callout_args)
+
+
+State 143
+
+   30 statement: IF '(' expr ')' block ELSE block .
+
+    $default  reduce using rule 30 (statement)
+
+
+State 144
+
+   31 statement: FOR id '=' expr ',' expr block .
+
+    $default  reduce using rule 31 (statement)
