@@ -68,7 +68,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-enum dataType { integer, invalid, boolean, character, string};
+enum dataType { integer, invalid, boolean, character, string, array};
 //invalid - symbols that do not have a type
 
 struct symbol {
@@ -608,8 +608,8 @@ static const yytype_uint16 yyrline[] =
      310,   316,   319,   322,   328,   330,   336,   340,   344,   350,
      354,   357,   361,   364,   366,   372,   374,   380,   382,   386,
      392,   394,   398,   402,   406,   412,   414,   420,   428,   430,
-     436,   442,   450,   452,   457,   462,   464,   468,   474,   477,
-     481,   485,   491
+     436,   442,   450,   452,   457,   462,   464,   469,   475,   478,
+     482,   486,   492
 };
 #endif
 
@@ -2153,65 +2153,66 @@ yyreduce:
     {   Init_PD2(&(yyval), "array");
                             (yyval)->firstChild = (yyvsp[-3]);
                             (yyvsp[-3])->nextSibling = (yyvsp[-1]);
+                            (yyval)->sym = GenSym(array);
                         }
-#line 2158 "y.tab.c" /* yacc.c:1646  */
+#line 2159 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 468 "sample.y" /* yacc.c:1646  */
+#line 469 "sample.y" /* yacc.c:1646  */
     {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                 (yyval)->sym = getFindSym((yyvsp[0])->lexeme, integer);
                 //$$->firstChild = $1;
             }
-#line 2167 "y.tab.c" /* yacc.c:1646  */
+#line 2168 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 474 "sample.y" /* yacc.c:1646  */
+#line 475 "sample.y" /* yacc.c:1646  */
     {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, integer);
                         }
-#line 2175 "y.tab.c" /* yacc.c:1646  */
+#line 2176 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 477 "sample.y" /* yacc.c:1646  */
+#line 478 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, string);
                             //$$->firstChild = $1;
                         }
-#line 2184 "y.tab.c" /* yacc.c:1646  */
+#line 2185 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 481 "sample.y" /* yacc.c:1646  */
+#line 482 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, character);
                             //$$->firstChild = $1;
                         }
-#line 2193 "y.tab.c" /* yacc.c:1646  */
+#line 2194 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 485 "sample.y" /* yacc.c:1646  */
+#line 486 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, boolean);
                             //$$->firstChild = $1;
                         }
-#line 2202 "y.tab.c" /* yacc.c:1646  */
+#line 2203 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 491 "sample.y" /* yacc.c:1646  */
+#line 492 "sample.y" /* yacc.c:1646  */
     {
             Init_PD2(&(yyval), "");
             (yyval)->sym = InstallLabel();
     }
-#line 2211 "y.tab.c" /* yacc.c:1646  */
+#line 2212 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2215 "y.tab.c" /* yacc.c:1646  */
+#line 2216 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2439,7 +2440,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 496 "sample.y" /* yacc.c:1906  */
+#line 497 "sample.y" /* yacc.c:1906  */
 
 
 #include "lex.yy.c"
@@ -2448,104 +2449,78 @@ yyreturn:
 
 int quadid = 1;
 
-int IncLabel()
-{
-        quadid ++;
-        return quadid;
+int IncLabel(){
+    quadid ++;
+    return quadid;
 }
 
-int GetLabel()
-{
-        return quadid;
+int GetLabel(){
+    return quadid;
 }
 
-struct symbol* InstallLabel()
-{
-        char label[256];
-        sprintf(label, "L%d", GetLabel());
-        return(AddSym(label, integer));
+struct symbol* InstallLabel(){
+    char label[256];
+    sprintf(label, "L%d", GetLabel());
+    return(AddSym(label, integer));
 }
 
-void Backpatch(struct backpatchList* l, struct symbol* s)
-{
-        struct backpatchList* b = l;
-        while (b != NULL)
-        {
-                //printf("backpatch L%d to %s\n", b->quad->idx, s->name);
-                b->quad->dst = s;
-                b = b->next;
-        }
+void Backpatch(struct backpatchList* l, struct symbol* s){
+    struct backpatchList* b = l;
+    while (b != NULL){
+        //printf("backpatch L%d to %s\n", b->quad->idx, s->name);
+        b->quad->dst = s;
+        b = b->next;
+    }
 }//Backkpatch
 
-void MergeBackpatch(struct backpatchList** x, struct backpatchList* y)
-{
+void MergeBackpatch(struct backpatchList** x, struct backpatchList* y){
+    if (*x == NULL) {  *x = y;  return; }
+    struct backpatchList* b = *x;
+    while (b->next != NULL){
+        b = b->next;
+    }
 
-
-        if (*x == NULL) {  *x = y;  return; }
-        struct backpatchList* b = *x;
-        while (b->next != NULL)
-        {
-
-                b = b->next;
-        }
-
-        b->next = y;
-
+    b->next = y;
     //PrintList(*x);
-
 }//MergeBackpatch
 
-void InsertTarget(struct backpatchList** x, struct quadtab* y)
-{
-        if (*x == NULL)
-        {
-                *x = (struct backpatchList*)malloc(sizeof(struct backpatchList));
-                (*x)->quad = y;
-                (*x)->next = NULL;
+void InsertTarget(struct backpatchList** x, struct quadtab* y){
+    if (*x == NULL){
+        *x = (struct backpatchList*)malloc(sizeof(struct backpatchList));
+        (*x)->quad = y;
+        (*x)->next = NULL;
         //PrintList (*x);
-                return;
-        }
+        return;
+    }
+    struct backpatchList* z = (struct backpatchList*) malloc(sizeof(struct backpatchList));
+    z->quad = y;
+    z->next = *x;
 
-        struct backpatchList* z = (struct backpatchList*)malloc(sizeof(struct backpatchList));
-        z->quad = y;
-        z->next = *x;
-
-        *x = z;
-
+    *x = z;
     //PrintList (*x);
 }//InsertTarget
 
-
-
-struct symbol* FindSymbol(char* lexeme)
-{
-        struct symtab* s = symStack;
-        while (s != NULL) {
-                struct symbol* sym = s->symbols;
-                while (sym != NULL)
-                {
-                                if (strcmp(lexeme, sym->name) == 0) return sym;
-                                sym = sym->next;
-                }
-                s = s->next;
+struct symbol* FindSymbol(char* lexeme){
+    struct symtab* s = symStack;
+    while (s != NULL) {
+        struct symbol* sym = s->symbols;
+        while (sym != NULL){
+            if (strcmp(lexeme, sym->name) == 0)
+                return sym;
+            sym = sym->next;
         }
-        return NULL;
+        s = s->next;
+    }
+    return NULL;
 }
 
-void PrintQuads()
-{
-
-        struct quadtab* q = quads;
-
-        while (q != NULL)
-        {
-
+void PrintQuads(){
+    struct quadtab* q = quads;
+    while (q != NULL){
         PrintQuad(q);
-
-                q = q->next;
-
-        }
-        printf ("\n\n");
+        q = q->next;
+    }
+    printf ("\n\n");
 }//PrintQuads
 
 void PrintQuad(struct quadtab* q) {
@@ -2561,77 +2536,57 @@ void PrintQuad(struct quadtab* q) {
 
 }//PrintQuad
 
-void PushSymTab() //push new symbol table to symbol table stack
-{
-        struct symtab* s = (struct symtab*) malloc(sizeof( struct symtab));
+void PushSymTab() { //push new symbol table to symbol table stack
+    struct symtab* s = (struct symtab*) malloc(sizeof( struct symtab));
 
-
-
-        s->next = symStack;
-        symStack = s;
-
+    s->next = symStack;
+    symStack = s;
 }//PushSymTab
 
-void PopSymTab() //pop from symbol table stack
-{
-        symStack = symStack->next;
-
-
-
+void PopSymTab() {//pop from symbol table stack
+    symStack = symStack->next;
 }//PopSymTab
 
-struct symbol* AddSym (char* name, enum dataType ty)
-{
-        struct symbol* var = (struct symbol*) malloc(sizeof( struct symbol));
-        strcpy(var->name, name);
-        var->type = ty;
-
-
-
-        var->next = symStack->symbols;
-        symStack->symbols = var;
-
-        return var;
-
+struct symbol* AddSym (char* name, enum dataType ty){
+    struct symbol* var = (struct symbol*) malloc(sizeof( struct symbol));
+    strcpy(var->name, name);
+    var->type = ty;
+    var->next = symStack->symbols;
+    symStack->symbols = var;
+    return var;
 }//AddSym
 
-struct symbol* GenSym(enum dataType ty)
-{
-        static int tempid = 0;
-        tempid ++;
-        struct symbol* temp = (struct symbol*) malloc (sizeof( struct symbol));
-        sprintf(temp->name, "t%d", tempid);
-        temp->type = ty;
-        temp->next = symStack->symbols;
-        symStack->symbols = temp;
-        return temp;
+struct symbol* GenSym(enum dataType ty){
+    static int tempid = 0;
+    tempid ++;
+    struct symbol* temp = (struct symbol*) malloc (sizeof( struct symbol));
+    sprintf(temp->name, "t%d", tempid);
+    temp->type = ty;
+    temp->next = symStack->symbols;
+    symStack->symbols = temp;
+    return temp;
 }//GenSym
 
-struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, struct symbol* dst)
-{
-        int quadid = GetLabel();
-        struct quadtab* q = (struct quadtab*) malloc(sizeof( struct quadtab));
-        strcpy(q->opcode, opcode);
-        q->src1 = src1;
-        q->src2 = src2;
-        q->dst = dst;
-        q->idx = quadid;
-        q->next = NULL;
+struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, struct symbol* dst) {
+    int quadid = GetLabel();
+    struct quadtab* q = (struct quadtab*) malloc(sizeof( struct quadtab));
+    strcpy(q->opcode, opcode);
+    q->src1 = src1;
+    q->src2 = src2;
+    q->dst = dst;
+    q->idx = quadid;
+    q->next = NULL;
 
-        if (quads == NULL)
-        {
-                quads = q;
-                quadTail = q;
-        }
-        else
-        {
-                quadTail->next = q;
-                quadTail = q;
-        }
-
-        IncLabel();
-        return q;
-
+    if (quads == NULL){
+        quads = q;
+        quadTail = q;
+    }
+    else{
+        quadTail->next = q;
+        quadTail = q;
+    }
+    IncLabel();
+    return q;
 }//GenQuad
 
 struct symbol* getFindSym(char* lexeme, enum dataType ty){
@@ -2642,24 +2597,23 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty){
     return s;
 }
 
-void PrintSymbols()
-{
+void PrintSymbols(){
+    printf("SYMBOLS BEGIN:\n");
 
-        printf("SYMBOLS BEGIN:\n");
-
-        struct symtab* s = symStack;
-        while (s != NULL) {
-                struct symbol* sym = s->symbols;
-                while (sym != NULL)
-                {
-                                if (sym->type == integer) printf("%s integer\n", sym->name);
-                                if (sym->type == invalid) printf("%s invalid\n", sym->name);
-                                sym = sym->next;
-                }
-                s = s->next;
+    struct symtab* s = symStack;
+    while (s != NULL) {
+        struct symbol* sym = s->symbols;
+        while (sym != NULL){
+            if (sym->type == integer)
+                printf("%s integer\n", sym->name);
+            if (sym->type == invalid)
+                printf("%s invalid\n", sym->name);
+            sym = sym->next;
         }
-        printf("SYMBOLS END\n");
-}
+        s = s->next;
+    }
+    printf("SYMBOLS END\n");
+} //PrintSymbols
 
 void PrintList(struct backpatchList* l) {
     printf("*********************\n");
@@ -2667,7 +2621,6 @@ void PrintList(struct backpatchList* l) {
         struct quadtab* q = l->quad;
         PrintQuad(q);
         l = l->next;
-
     }
     printf("*********************\n");
 }//PrintList
@@ -2695,9 +2648,7 @@ void PrintTree2 (struct info* x) {
     Print (x, 0);
 }
 
-void PrintTree (struct info* x) {
-
-}
+void PrintTree (struct info* x) { }
 
 void Print (struct info* x, int level) {
     if (x == NULL) return;
@@ -2713,9 +2664,8 @@ void Print (struct info* x, int level) {
     Print (x->nextSibling, level);
 }
 
-int main(void)
-{
+int main(void){
     PushSymTab();
-        yyparse();
-        return 0;
+    yyparse();
+    return 0;
 }
