@@ -48,8 +48,8 @@ Grammar
 
    30 stmt: block
    31     | expr_a SEMCOL
-   32     | IF OP expr_a CP block
-   33     | IF OP expr_a CP block ELSE block
+   32     | IF OP expr_a CP M block
+   33     | IF OP expr_a CP M block ELSE M block
    34     | FOR fexpr COMMA expr_a block
    35     | RETURN Rexpr SEMCOL
    36     | BREAK SEMCOL
@@ -229,7 +229,7 @@ factor (75)
 literal (76)
     on left: 77 78 79 80, on right: 8 74
 M (77)
-    on left: 81, on right: 28
+    on left: 81, on right: 28 32 33
 
 
 State 0
@@ -810,8 +810,8 @@ State 64
 
 State 65
 
-   32 stmt: IF . OP expr_a CP block
-   33     | IF . OP expr_a CP block ELSE block
+   32 stmt: IF . OP expr_a CP M block
+   33     | IF . OP expr_a CP M block ELSE M block
 
     OP  shift, and go to state 88
 
@@ -1058,8 +1058,8 @@ State 87
 
 State 88
 
-   32 stmt: IF OP . expr_a CP block
-   33     | IF OP . expr_a CP block ELSE block
+   32 stmt: IF OP . expr_a CP M block
+   33     | IF OP . expr_a CP M block ELSE M block
 
     ID              shift, and go to state 67
     bool_literal    shift, and go to state 27
@@ -1560,8 +1560,8 @@ State 119
 
 State 120
 
-   32 stmt: IF OP expr_a . CP block
-   33     | IF OP expr_a . CP block ELSE block
+   32 stmt: IF OP expr_a . CP M block
+   33     | IF OP expr_a . CP M block ELSE M block
 
     CP  shift, and go to state 146
 
@@ -1850,12 +1850,12 @@ State 145
 
 State 146
 
-   32 stmt: IF OP expr_a CP . block
-   33     | IF OP expr_a CP . block ELSE block
+   32 stmt: IF OP expr_a CP . M block
+   33     | IF OP expr_a CP . M block ELSE M block
 
-    OB  shift, and go to state 45
+    $default  reduce using rule 81 (M)
 
-    block  go to state 155
+    M  go to state 155
 
 
 State 147
@@ -1935,12 +1935,12 @@ State 154
 
 State 155
 
-   32 stmt: IF OP expr_a CP block .
-   33     | IF OP expr_a CP block . ELSE block
+   32 stmt: IF OP expr_a CP M . block
+   33     | IF OP expr_a CP M . block ELSE M block
 
-    ELSE  shift, and go to state 158
+    OB  shift, and go to state 45
 
-    $default  reduce using rule 32 (stmt)
+    block  go to state 158
 
 
 State 156
@@ -1963,11 +1963,12 @@ State 157
 
 State 158
 
-   33 stmt: IF OP expr_a CP block ELSE . block
+   32 stmt: IF OP expr_a CP M block .
+   33     | IF OP expr_a CP M block . ELSE M block
 
-    OB  shift, and go to state 45
+    ELSE  shift, and go to state 160
 
-    block  go to state 160
+    $default  reduce using rule 32 (stmt)
 
 
 State 159
@@ -1979,6 +1980,24 @@ State 159
 
 State 160
 
-   33 stmt: IF OP expr_a CP block ELSE block .
+   33 stmt: IF OP expr_a CP M block ELSE . M block
+
+    $default  reduce using rule 81 (M)
+
+    M  go to state 161
+
+
+State 161
+
+   33 stmt: IF OP expr_a CP M block ELSE M . block
+
+    OB  shift, and go to state 45
+
+    block  go to state 162
+
+
+State 162
+
+   33 stmt: IF OP expr_a CP M block ELSE M block .
 
     $default  reduce using rule 33 (stmt)

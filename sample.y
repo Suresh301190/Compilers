@@ -123,15 +123,15 @@ program	: CLASS PROGRAM	OB feild_methods CB {	Init_PD2 (&$$, "program");
                                             }
     ;
 
-feild_methods    :   feild_methods  feild_method    {   Init_PD2(&$$, "feild_methods");
-                                                        if($1){
-                                                            $$->firstChild = $1;
-                                                            $1->nextSibling = $2;
-                                                        }
-                                                        else
-                                                            $$->firstChild = $2;
+feild_methods    :   feild_methods feild_method {   Init_PD2(&$$, "feild_methods");
+                                                    if($1){
+                                                        $$->firstChild = $1;
+                                                        $1->nextSibling = $2;
                                                     }
-    |       {   $$ = NULL; }
+                                                    else
+                                                        $$->firstChild = $2;
+                                                }
+    |       {   Init_PD2(&$$, "");  }
     ;
 
 feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
@@ -142,6 +142,10 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                 }
                                 else
                                     $2->nextSibling = $6;
+                                MergeBackpatch(&($$->nextlist), $6->nextlist);
+                                struct symbol* s = InstallLabel();
+                                GenQuad("halt", NULL, NULL, NULL);
+                                Backpatch($$->nextlist, s);
                             }
     |   VOID ID OP args CP block    {   Init_PD2(&$$, "method_decl");
                                         $$->firstChild = $2;
@@ -151,6 +155,10 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                         }
                                         else
                                             $2->nextSibling = $6;
+                                        MergeBackpatch(&($$->nextlist), $6->nextlist);
+                                        struct symbol* s = InstallLabel();
+                                        GenQuad("halt", NULL, NULL, NULL);
+                                        Backpatch($$->nextlist, s);
                                     }
     |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init_PD2(&$$, "feild_decl");
                                             $$->firstChild = $1;
@@ -227,6 +235,8 @@ block   :   OB var_decls stmts CB   {   Init_PD2(&$$, "block");
                                         }
                                         else
                                             $$->firstChild = $3;
+                                        MergeBackpatch(&($$->nextlist), $2->nextlist);
+                                        MergeBackpatch(&($$->nextlist), $3->nextlist);
                                     }
     ;
 
@@ -238,7 +248,7 @@ var_decls   :   var_decls var_decl  {   Init_PD2(&$$, "var_decls");
                                         else
                                             $$->firstChild = $2;
                                     }
-    |       {   $$ = NULL;
+    |       {   Init_PD2(&$$, "");
             }
     ;
 
@@ -268,8 +278,10 @@ stmts	:	stmts M stmt	{	Init_PD2 (&$$, "stmts");
                             else
                                 $$->firstChild = $3;
                             PrintTree($$);
+                            Backpatch($1->nextlist, $2->sym);
+                            MergeBackpatch(&($$->nextlist), $3->nextlist);
                         }
-    |			{	$$ = NULL;
+    |			{	Init_PD2(&$$, "");
                     PrintTree($$);
                 }
     ;
@@ -278,17 +290,26 @@ stmt	:	block    {   $$ = $1; }
     |   expr_a SEMCOL	{	Init_PD2 (&$$, "eval");
                             $$->firstChild = $1;
                             PrintTree($$);
+                            MergeBackpatch(&($$->nextlist), $1->truelist);
+                            MergeBackpatch(&($$->nextlist), $1->falselist);
                         }
-    |	IF OP expr_a CP block   {   Init_PD2 (&$$, "if");
+    |	IF OP expr_a CP M block {   Init_PD2 (&$$, "if");
                                     $$->firstChild = $3;
-                                    $3->nextSibling = $5;
+                                    $3->nextSibling = $6;
                                     PrintTree($$);
+                                    Backpatch($3->truelist, $5->sym);
+                                    MergeBackpatch(&($$->nextlist), $3->falselist);
+                                    MergeBackpatch(&($$->nextlist), $6->nextlist);
                                 }
-    |	IF OP expr_a CP block ELSE block  {   Init_PD2 (&$$, "if");
+    |	IF OP expr_a CP M block ELSE M block  {   Init_PD2 (&$$, "if");
                                     $$->firstChild = $3;
-                                    $3->nextSibling = $5;
-                                    $5->nextSibling = $7;
+                                    $3->nextSibling = $6;
+                                    $6->nextSibling = $9;
                                     PrintTree($$);
+                                    Backpatch($3->truelist, $5->sym);
+                                    Backpatch($3->falselist, $8->sym);
+                                    MergeBackpatch(&($$->nextlist), $6->nextlist);
+                                    MergeBackpatch(&($$->nextlist), $9->nextlist);
                                 }
     |   FOR fexpr COMMA expr_a block  {   Init_PD2(&$$, "for");
                                         $$->firstChild = $2;
@@ -359,7 +380,7 @@ expr_rec    :   expr_a  expr_rec2   {   Init_PD2(&$$, "args");
                                         $$->firstChild = $1;
                                         $1->nextSibling = $2;
                                     }
-    |       {   $$ = NULL;  }
+    |       {   Init_PD2(&$$, ""); }
     ;
 
 expr_rec2   :   COMMA expr_a expr_rec2  {   Init_PD2(&$$, "args");
@@ -600,9 +621,12 @@ void PrintQuad(struct quadtab* q) {
         else
             printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
     }
-    else if (strcmp(q->opcode, "if") == 0)
-        printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-
+    else if (strcmp(q->opcode, "if") == 0){
+        //if(q->dst->name)
+            printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
+        //else
+        //    printf("L%d: if %s goto L%d\n", q->idx, q->src1->name, q->idx + 1);
+    }
     else if (strcmp(q->opcode, "ifFalse") == 0)
         printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
 

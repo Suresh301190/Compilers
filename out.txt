@@ -10,6 +10,8 @@ program
                             x
                         var
                             y
+                            var
+                                z
                 stmts
                     stmts
                         stmts
@@ -29,21 +31,33 @@ program
                                         a
                                         5
                                     6
-                    eval
-                        assign_op
-                            z
-                            GREATER_EQUAL
-                                x
-                                y
+                    if
+                        LESS_THAN
+                            x
+                            y
+                        block
+                            stmts
+                                eval
+                                    assign_op
+                                        z
+                                        2
+                        block
+                            stmts
+                                eval
+                                    assign_op
+                                        z
+                                        5
 L1: t1 = 6 % 25
 L2: t2 = x + t1
 L3: y = t2
 L4: t3 = a[5]
 L5: t4 = t3 * 6
 L6: x = x + t4
-L7: t5 = x >= y
-L8: if t5 goto (null)
-L9: ifFalse t5 goto (null)
-L10: z = t5
+L7: t5 = x < y
+L8: if t5 goto L10
+L9: ifFalse t5 goto L11
+L10: z = 2
+L11: z = 5
+L12: halt
 
 
