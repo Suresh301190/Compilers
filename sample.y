@@ -86,6 +86,8 @@ void PrintSymbols();
 
 struct symbol* FindSymbol(char* lexeme, enum dataType ty);
 
+void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3);
+
 void PrintQuad (struct quadtab* q);
 
 void PrintList (struct backpatchList* l) ;
@@ -336,10 +338,16 @@ expr_a    :   expr_or   {   $$ = $1;
     |   ID PASS expr_or {   Init_PD2(&$$, "plus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
+                            $$->sym = getFindSym($1->lexeme, $1->type);
+                            GenQuad("+", $$->sym, $3->sym, $$->sym);
+                            //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
     |   ID MASS expr_or {   Init_PD2(&$$, "minus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
+                            $$->sym = getFindSym($1->lexeme, $1->type);
+                            GenQuad("-", $$->sym, $3->sym, $$->sym);
+                            //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
     |   ID OP expr_rec CP   {   Init_PD2(&$$, "method_call");
                                 $$->firstChild = $1;
@@ -382,10 +390,12 @@ expr_eq :   expr_rel    {   $$ = $1;
     |   expr_eq EQ expr_rel {   Init_PD2(&$$, "EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
+                                rel_operation("==", $$, $1, $3);
                             }
     |   expr_eq NE expr_rel {   Init_PD2(&$$, "NOT_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
+                                rel_operation("!=", $$, $1, $3);
                             }
     ;
 
@@ -394,24 +404,22 @@ expr_rel :   expr_pm {   $$ = $1;
     |   expr_rel LT expr_pm {   Init_PD2(&$$, "LESS_THAN");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
+                                rel_operation("<", $$, $1, $3);
                             }
     |   expr_rel GT expr_pm {   Init_PD2(&$$, "GREATER_THAN");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
+                                rel_operation(">", $$, $1, $3);
                             }
     |   expr_rel LE expr_pm {   Init_PD2(&$$, "LESS_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
+                                rel_operation("<=", $$, $1, $3);
                             }
     |   expr_rel GE expr_pm {   Init_PD2(&$$, "GREATER_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
-                                $$->sym = GenSym(boolean);
-                                GenQuad("<", $1->sym, $3->sym, $$->sym);
-                                struct quadtab* q1 = GenQuad("if", $$->sym, NULL, NULL);
-                                InsertTarget(&($$->truelist), q1);
-                                struct quadtab* q2 = GenQuad("ifFalse", $$->sym, NULL, NULL);
-                                                    InsertTarget(&($$->falselist), q2);
+                                rel_operation(">=", $$, $1, $3);
                             }
     ;
 
@@ -673,6 +681,15 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty){
     return s;
 }
 
+void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3){
+    SS->sym = GenSym(boolean);
+    GenQuad(op, S1->sym, S3->sym, SS->sym);
+    struct quadtab* q1 = GenQuad("if", SS->sym, NULL, NULL);
+    InsertTarget(&(SS->truelist), q1);
+    struct quadtab* q2 = GenQuad("ifFalse", SS->sym, NULL, NULL);
+    InsertTarget(&(SS->falselist), q2);
+}
+
 void PrintSymbols(){
     printf("SYMBOLS BEGIN:\n");
 
@@ -724,7 +741,10 @@ void PrintTree2 (struct info* x) {
     Print (x, 0);
 }
 
-void PrintTree (struct info* x) { }
+void PrintTree (struct info* x) {
+    //printf("********************\n");
+    //Print (x, 0);
+}
 
 void Print (struct info* x, int level) {
     if (x == NULL) return;
