@@ -406,6 +406,12 @@ expr_rel :   expr_pm {   $$ = $1;
     |   expr_rel GE expr_pm {   Init_PD2(&$$, "GREATER_EQUAL");
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
+                                $$->sym = GenSym(boolean);
+                                GenQuad("<", $1->sym, $3->sym, $$->sym);
+                                struct quadtab* q1 = GenQuad("if", $$->sym, NULL, NULL);
+                                InsertTarget(&($$->truelist), q1);
+                                struct quadtab* q2 = GenQuad("ifFalse", $$->sym, NULL, NULL);
+                                                    InsertTarget(&($$->falselist), q2);
                             }
     ;
 
