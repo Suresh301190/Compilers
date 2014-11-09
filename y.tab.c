@@ -72,9 +72,9 @@ enum dataType { integer, invalid, boolean, character, string, array};
 //invalid - symbols that do not have a type
 
 struct symbol {
-        char name[256];
-        enum dataType type;
-        struct symbol* next;
+    char name[256];
+    enum dataType type;
+    struct symbol* next;
 };
 
 struct symtab {
@@ -149,7 +149,7 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty);
 
 void PrintSymbols();
 
-struct symbol* FindSymbol(char* lexeme);
+struct symbol* FindSymbol(char* lexeme, enum dataType ty);
 
 void PrintQuad (struct quadtab* q);
 
@@ -608,8 +608,8 @@ static const yytype_uint16 yyrline[] =
      310,   316,   319,   322,   328,   330,   336,   340,   344,   350,
      354,   357,   361,   364,   366,   372,   374,   380,   382,   386,
      392,   394,   398,   402,   406,   412,   414,   420,   428,   430,
-     436,   442,   450,   452,   457,   462,   464,   469,   475,   478,
-     482,   486,   492
+     436,   442,   450,   452,   457,   462,   464,   472,   478,   481,
+     485,   489,   495
 };
 #endif
 
@@ -1882,7 +1882,7 @@ yyreduce:
     {   Init_PD2(&(yyval), "assign_op");
                             (yyval)->firstChild = (yyvsp[-2]);
                             (yyvsp[-2])->nextSibling = (yyvsp[0]);
-                            (yyval)->sym = getFindSym((yyvsp[-2])->lexeme, (yyvsp[0])->type);
+                            (yyval)->sym = getFindSym((yyvsp[-2])->lexeme, (yyvsp[-2])->type);
                             GenQuad("=", (yyvsp[0])->sym, NULL, (yyval)->sym);
                         }
 #line 1889 "y.tab.c" /* yacc.c:1646  */
@@ -2153,66 +2153,69 @@ yyreduce:
     {   Init_PD2(&(yyval), "array");
                             (yyval)->firstChild = (yyvsp[-3]);
                             (yyvsp[-3])->nextSibling = (yyvsp[-1]);
-                            (yyval)->sym = GenSym(array);
+                            (yyvsp[-3])->sym = getFindSym((yyvsp[-3])->lexeme, array);
+                            (yyval)->sym = GenSym(integer);
+                            GenQuad("=", (yyvsp[-3])->sym, (yyvsp[-1])->sym, (yyval)->sym);
+
                         }
-#line 2159 "y.tab.c" /* yacc.c:1646  */
+#line 2162 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 469 "sample.y" /* yacc.c:1646  */
+#line 472 "sample.y" /* yacc.c:1646  */
     {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                 (yyval)->sym = getFindSym((yyvsp[0])->lexeme, integer);
                 //$$->firstChild = $1;
             }
-#line 2168 "y.tab.c" /* yacc.c:1646  */
+#line 2171 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 475 "sample.y" /* yacc.c:1646  */
+#line 478 "sample.y" /* yacc.c:1646  */
     {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, integer);
                         }
-#line 2176 "y.tab.c" /* yacc.c:1646  */
+#line 2179 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 478 "sample.y" /* yacc.c:1646  */
+#line 481 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, string);
                             //$$->firstChild = $1;
                         }
-#line 2185 "y.tab.c" /* yacc.c:1646  */
+#line 2188 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 482 "sample.y" /* yacc.c:1646  */
+#line 485 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, character);
                             //$$->firstChild = $1;
                         }
-#line 2194 "y.tab.c" /* yacc.c:1646  */
+#line 2197 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 486 "sample.y" /* yacc.c:1646  */
+#line 489 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = getFindSym((yyvsp[0])->lexeme, boolean);
                             //$$->firstChild = $1;
                         }
-#line 2203 "y.tab.c" /* yacc.c:1646  */
+#line 2206 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 492 "sample.y" /* yacc.c:1646  */
+#line 495 "sample.y" /* yacc.c:1646  */
     {
             Init_PD2(&(yyval), "");
             (yyval)->sym = InstallLabel();
     }
-#line 2212 "y.tab.c" /* yacc.c:1646  */
+#line 2215 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2216 "y.tab.c" /* yacc.c:1646  */
+#line 2219 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2440,7 +2443,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 497 "sample.y" /* yacc.c:1906  */
+#line 500 "sample.y" /* yacc.c:1906  */
 
 
 #include "lex.yy.c"
@@ -2500,12 +2503,12 @@ void InsertTarget(struct backpatchList** x, struct quadtab* y){
     //PrintList (*x);
 }//InsertTarget
 
-struct symbol* FindSymbol(char* lexeme){
+struct symbol* FindSymbol(char* lexeme, enum dataType ty){
     struct symtab* s = symStack;
     while (s != NULL) {
         struct symbol* sym = s->symbols;
         while (sym != NULL){
-            if (strcmp(lexeme, sym->name) == 0)
+            if (strcmp(lexeme, sym->name) == 0 && ty == sym->type)
                 return sym;
             sym = sym->next;
         }
@@ -2524,15 +2527,29 @@ void PrintQuads(){
 }//PrintQuads
 
 void PrintQuad(struct quadtab* q) {
-    if (strcmp(q->opcode, "=") == 0) printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
-    else if (strcmp(q->opcode, "if") == 0) printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-    else if (strcmp(q->opcode, "ifFalse") == 0) printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-    else if (strcmp(q->opcode, "goto") == 0) printf("L%d: goto %s\n", q->idx, q->dst->name);
-    else if (strcmp(q->opcode, "halt") == 0) printf("L%d: halt\n", q->idx);
+    if (strcmp(q->opcode, "=") == 0){
+        if(q->src1->type == array)
+            printf("L%d: %s = %s[%s]\n", q->idx, q->dst->name, q->src1->name, q->src2->name);
+        else
+            printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
+    }
+    else if (strcmp(q->opcode, "if") == 0)
+        printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
 
-    else if (q->src2 == NULL) printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
-    else printf ("L%d: %s = %s %s %s\n", q->idx, q->dst->name, q->src1->name, q->opcode, q->src2->name);
+    else if (strcmp(q->opcode, "ifFalse") == 0)
+        printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
 
+    else if (strcmp(q->opcode, "goto") == 0)
+        printf("L%d: goto %s\n", q->idx, q->dst->name);
+
+    else if (strcmp(q->opcode, "halt") == 0)
+        printf("L%d: halt\n", q->idx);
+
+    else if (q->src2 == NULL)
+        printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
+
+    else
+        printf ("L%d: %s = %s %s %s\n", q->idx, q->dst->name, q->src1->name, q->opcode, q->src2->name);
 
 }//PrintQuad
 
@@ -2590,7 +2607,7 @@ struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, 
 }//GenQuad
 
 struct symbol* getFindSym(char* lexeme, enum dataType ty){
-    struct symbol* s = FindSymbol (lexeme);
+    struct symbol* s = FindSymbol (lexeme, ty);
     if (!s) {
             s = AddSym(lexeme, ty);
     }

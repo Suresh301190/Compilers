@@ -11,16 +11,28 @@ program
                         var
                             y
                 stmts
+                    stmts
+                        eval
+                            assign_op
+                                y
+                                plus
+                                    x
+                                    mod
+                                        6
+                                        25
                     eval
                         assign_op
                             x
-                            plus
-                                5
-                                mul
-                                    2
-                                    y
-L1: t1 = 2 * y
-L2: t2 = 5 + t1
-L3: x = t2
+                            mul
+                                array
+                                    a
+                                    5
+                                6
+L1: t1 = 6 % 25
+L2: t2 = x + t1
+L3: y = t2
+L4: t3 = a[5]
+L5: t4 = t3 * 6
+L6: x = t4
 
 

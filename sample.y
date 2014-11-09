@@ -7,9 +7,9 @@ enum dataType { integer, invalid, boolean, character, string, array};
 //invalid - symbols that do not have a type
 
 struct symbol {
-        char name[256];
-        enum dataType type;
-        struct symbol* next;
+    char name[256];
+    enum dataType type;
+    struct symbol* next;
 };
 
 struct symtab {
@@ -84,7 +84,7 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty);
 
 void PrintSymbols();
 
-struct symbol* FindSymbol(char* lexeme);
+struct symbol* FindSymbol(char* lexeme, enum dataType ty);
 
 void PrintQuad (struct quadtab* q);
 
@@ -330,7 +330,7 @@ expr_a    :   expr_or   {   $$ = $1;
     |   ID ASS expr_or  {   Init_PD2(&$$, "assign_op");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = getFindSym($1->lexeme, $3->type);
+                            $$->sym = getFindSym($1->lexeme, $1->type);
                             GenQuad("=", $3->sym, NULL, $$->sym);
                         }
     |   ID PASS expr_or {   Init_PD2(&$$, "plus_eq");
@@ -464,7 +464,10 @@ factor  :	OP expr_a CP	{	$$ = $2;
     |   ID OS expr_a CS {   Init_PD2(&$$, "array");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = GenSym(array);
+                            $1->sym = getFindSym($1->lexeme, array);
+                            $$->sym = GenSym(integer);
+                            GenQuad("=", $1->sym, $3->sym, $$->sym);
+
                         }
     |	ID	{	Init_PD2(&$$, $1->PD2_type);
                 $$->sym = getFindSym($1->lexeme, integer);
@@ -553,12 +556,12 @@ void InsertTarget(struct backpatchList** x, struct quadtab* y){
     //PrintList (*x);
 }//InsertTarget
 
-struct symbol* FindSymbol(char* lexeme){
+struct symbol* FindSymbol(char* lexeme, enum dataType ty){
     struct symtab* s = symStack;
     while (s != NULL) {
         struct symbol* sym = s->symbols;
         while (sym != NULL){
-            if (strcmp(lexeme, sym->name) == 0)
+            if (strcmp(lexeme, sym->name) == 0 && ty == sym->type)
                 return sym;
             sym = sym->next;
         }
@@ -577,15 +580,29 @@ void PrintQuads(){
 }//PrintQuads
 
 void PrintQuad(struct quadtab* q) {
-    if (strcmp(q->opcode, "=") == 0) printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
-    else if (strcmp(q->opcode, "if") == 0) printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-    else if (strcmp(q->opcode, "ifFalse") == 0) printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-    else if (strcmp(q->opcode, "goto") == 0) printf("L%d: goto %s\n", q->idx, q->dst->name);
-    else if (strcmp(q->opcode, "halt") == 0) printf("L%d: halt\n", q->idx);
+    if (strcmp(q->opcode, "=") == 0){
+        if(q->src1->type == array)
+            printf("L%d: %s = %s[%s]\n", q->idx, q->dst->name, q->src1->name, q->src2->name);
+        else
+            printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
+    }
+    else if (strcmp(q->opcode, "if") == 0)
+        printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
 
-    else if (q->src2 == NULL) printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
-    else printf ("L%d: %s = %s %s %s\n", q->idx, q->dst->name, q->src1->name, q->opcode, q->src2->name);
+    else if (strcmp(q->opcode, "ifFalse") == 0)
+        printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
 
+    else if (strcmp(q->opcode, "goto") == 0)
+        printf("L%d: goto %s\n", q->idx, q->dst->name);
+
+    else if (strcmp(q->opcode, "halt") == 0)
+        printf("L%d: halt\n", q->idx);
+
+    else if (q->src2 == NULL)
+        printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
+
+    else
+        printf ("L%d: %s = %s %s %s\n", q->idx, q->dst->name, q->src1->name, q->opcode, q->src2->name);
 
 }//PrintQuad
 
@@ -643,7 +660,7 @@ struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, 
 }//GenQuad
 
 struct symbol* getFindSym(char* lexeme, enum dataType ty){
-    struct symbol* s = FindSymbol (lexeme);
+    struct symbol* s = FindSymbol (lexeme, ty);
     if (!s) {
             s = AddSym(lexeme, ty);
     }
