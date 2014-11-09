@@ -1,0 +1,26 @@
+********************
+program
+    feild_methods
+        method_decl
+            main
+            block
+                var_decls
+                    var_decl
+                        int
+                            x
+                        var
+                            y
+                stmts
+                    eval
+                        assign_op
+                            x
+                            plus
+                                5
+                                mul
+                                    2
+                                    y
+L1: t1 = 2 * y
+L2: t2 = 5 + t1
+L3: x = t2
+
+

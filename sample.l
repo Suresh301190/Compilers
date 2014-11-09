@@ -39,7 +39,7 @@ extern struct info* yylval;
  */
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
-#define INIT(op)  { PRINT Init_PD2(&yylval, yytext); return op; }
+#define INIT(op)  { PRINT Init_PD2(&yylval, yytext); strcpy(yylval->lexeme, yytext);  return op; }
 //#define PRINT     printf("%d. %s\n", counter++, yytext);
 #define PRINT
 
