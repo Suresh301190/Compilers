@@ -149,16 +149,16 @@ feild_methods    :   feild_methods feild_method {   Init_PD2(&$$, "feild_methods
     |       {   Init_PD2(&$$, "");  }
     ;
 
-feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
-                                $$->firstChild = $2;
-                                if($4) {
-                                    $2->nextSibling = $4;
-                                    $4->nextSibling = $6;
+feild_method    :   type { AddFunction(); } ID OP args CP block {   Init_PD2(&$$, "method_decl");
+                                $$->firstChild = $3;
+                                if($5) {
+                                    $3->nextSibling = $5;
+                                    $5->nextSibling = $7;
                                 }
                                 else
-                                    $2->nextSibling = $6;
+                                    $3->nextSibling = $7;
 
-                                MergeBackpatch(&($$->nextlist), $6->nextlist);
+                                MergeBackpatch(&($$->nextlist), $7->nextlist);
                                 struct symbol* s = InstallLabel();
                                 GenQuad("halt", NULL, NULL, NULL);
                                 Backpatch($$->nextlist, s);
