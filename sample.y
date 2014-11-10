@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+int DEBUG_MODE = 1;
+
 enum dataType { integer, invalid, boolean, character, string, array, function, search, intArray, boolArray};
 //invalid - symbols that do not have a type
 
@@ -57,6 +59,10 @@ struct info {
 
 void yyerror (char const *s);
 
+int getOffset(enum dataType ty);
+
+enum dataType resolveType(enum dataType ty);
+
 int IncLabel();
 
 int GetLabel();
@@ -98,6 +104,8 @@ void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3);
 void PrintQuad (struct quadtab* q);
 
 void PrintList (struct backpatchList* l) ;
+
+void AddFunction();
 
 struct info* Init_PD2(struct info** x, char* y);
 void PrintTree (struct info* x);
@@ -170,17 +178,24 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                         GenQuad("halt", NULL, NULL, NULL);
                                         Backpatch($$->nextlist, s);
                                     }
-    |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init_PD2(&$$, "array");
+    |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init_PD2(&$$, "feild_decl");
                                             $$->firstChild = $1;
                                             $1->nextSibling = $2;
                                             $2->nextSibling = $4;
                                             $4->nextSibling = $6;
+                                            $2->sym = AddSym($2->lexeme, $1->type == integer?intArray:boolArray);
+                                            $2->sym->arraySize = $4->sym;
+                                            MergeBackpatch(&($$->typelist), $6->typelist);
+                                            UpdateType($$->typelist, $1->type);
+
                                         }
     |   type ID ARR_IDS SEMCOL  {   Init_PD2(&$$, "feild_decl");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $2;
                                     $2->nextSibling = $3;
-                                    UpdateType($$->nextlist, $1->type);
+                                    AddSym($2->lexeme, $1->type);
+                                    MergeBackpatch(&($$->typelist), $3->typelist);
+                                    UpdateType($$->typelist, $1->type);
                                 }
     |   type ID ASS literal SEMCOL  {   Init_PD2(&$$, "feild_decl");
                                         $$->firstChild = $1;
@@ -206,10 +221,10 @@ type    :   INT {   Init_PD2(&$$, "int");
 ARR_IDS :   COMMA ARR_ID ARR_IDS    {   Init_PD2(&$$, "feild");
                                         $$->firstChild = $2;
                                         $2->nextSibling = $3;
-                                        MergeBackpatch(&($$->nextlist), $2->nextlist);
-                                        MergeBackpatch(&($$->nextlist), $3->nextlist);
+                                        MergeBackpatch(&($$->typelist), $2->typelist);
+                                        MergeBackpatch(&($$->typelist), $3->typelist);
                                     }
-    |       {   $$ = NULL;
+    |       {   Init_PD2(&$$, "");
             }
     ;
 
@@ -264,7 +279,8 @@ block   :   OB { PushSymTab(); } var_decls stmts CB   {   Init_PD2(&$$, "block")
                                             $$->firstChild = $4;
                                         MergeBackpatch(&($$->nextlist), $3->nextlist);
                                         MergeBackpatch(&($$->nextlist), $4->nextlist);
-                                        //PrintSymbols();
+                                        if(DEBUG_MODE)
+                                            PrintSymbols();
                                         PopSymTab();
                                     }
     ;
@@ -434,17 +450,25 @@ expr_rec2   :   COMMA expr_a expr_rec2  {   Init_PD2(&$$, "args");
 
 expr_or :   expr_and    {   $$ = $1;
                         }
-    |   expr_or OR expr_and {   Init_PD2(&$$, "cond_OR");
+    |   expr_or OR M expr_and {   Init_PD2(&$$, "cond_OR");
                                 $$->firstChild = $1;
-                                $1->nextSibling = $3;
+                                $1->nextSibling = $4;
+                                Backpatch($$->falselist, $3->sym);
+                                MergeBackpatch(&($$->truelist), $1->truelist);
+                                MergeBackpatch(&($$->truelist), $4->truelist);
+                                MergeBackpatch(&($$->falselist), $4->falselist);
                             }
     ;
 
 expr_and :   expr_eq    {   $$ = $1;
                         }
-    |   expr_and AND expr_eq    {   Init_PD2(&$$, "cond_AND");
+    |   expr_and AND M expr_eq    {   Init_PD2(&$$, "cond_AND");
                                     $$->firstChild = $1;
-                                    $1->nextSibling = $3;
+                                    $1->nextSibling = $4;
+                                    Backpatch($$->truelist, $3->sym);
+                                    MergeBackpatch(&($$->falselist), $1->falselist);
+                                    MergeBackpatch(&($$->falselist), $4->falselist);
+                                    MergeBackpatch(&($$->truelist), $4->truelist);
                                 }
     ;
 
@@ -530,6 +554,8 @@ factor  :	OP expr_a CP	{	$$ = $2;
                                     $$->firstChild = $2;
                                     $$->sym = GenSym(boolean);
                                     GenQuad("!", $2->sym,NULL, $$->sym);
+                                    MergeBackpatch(&($$->truelist), $2->falselist);
+                                    MergeBackpatch(&($$->falselist), $2->truelist);
                                 }
     |	MINUS factor %prec UMINUS   {	Init_PD2 (&$$, "NEG");
                                         $$->firstChild = $2;
@@ -542,7 +568,7 @@ factor  :	OP expr_a CP	{	$$ = $2;
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                             $1->sym = FindSymbol($1->lexeme);
-                            $$->sym = GenSym($1->sym->type);
+                            $$->sym = GenSym(resolveType($1->sym->type));
                             GenQuad("=", $1->sym, $3->sym, $$->sym);
 
                         }
@@ -565,7 +591,11 @@ literal :   int_literal	{	Init_PD2(&$$, $1->PD2_type);
                         }
     |   bool_literal    {   Init_PD2(&$$, $1->PD2_type);
                             $$->sym = AddSym($1->lexeme, boolean);
-                            //$$->firstChild = $1;
+                            struct quadtab* q1 = GenQuad("goto", $$->sym, NULL, NULL);
+                            if(strcmp($1->lexeme, "true"))
+                                InsertTarget(&($$->truelist), q1);
+                            else
+                                InsertTarget(&($$->falselist), q1);
                         }
     ;
 
@@ -578,9 +608,21 @@ M   :       {
 
 #include "lex.yy.c"
 
-int DEBUG_MODE = 1;
-
 int quadid = 1;
+
+int getOffset(enum dataType ty){
+    if(intArray == ty)
+        return 4;
+    else
+        return 1;
+}
+
+enum dataType resolveType(enum dataType ty){
+    if(ty == intArray)
+        return integer;
+    else
+        return boolean;
+}
 
 int IncLabel(){
     quadid ++;
@@ -655,7 +697,7 @@ void UpdateType(struct backpatchList* x, enum dataType ty){
     struct backpatchList* toPatch = x;
     while(toPatch != NULL){
         struct symbol* s = toPatch->sym;
-        printf("%s %d->%d \n", s->name, s->type, ty);
+        //printf("%s %d->%d \n", s->name, s->type, ty);
         if(s->type == array){
             if(ty == integer)
                 s->type = intArray;
@@ -669,6 +711,11 @@ void UpdateType(struct backpatchList* x, enum dataType ty){
 }
 
 struct symbol* FindSymbol(char* lexeme){
+    if(strcmp(lexeme, "") == 0)
+        return AddSym(lexeme, invalid);
+    if(lexeme[0] >= '1' && lexeme[0] <= '9'){
+        return AddSym(lexeme, integer);
+    }
     struct symtab* s = symStack;
     while (s != NULL) {
         struct symbol* sym = s->symbols;
@@ -679,7 +726,8 @@ struct symbol* FindSymbol(char* lexeme){
         }
         s = s->next;
     }
-    printf("undefined variable/function %s\n", lexeme);
+
+    printf("FS undefined variable/function %s\n", lexeme);
     if(!DEBUG_MODE){
         exit(0);
     }
@@ -727,7 +775,7 @@ void PrintQuad(struct quadtab* q) {
         printf("L%d: halt\n", q->idx);
 
     else if(strcmp(q->opcode, "function") == 0)
-        printf("%s %s starts\n", q->opcode, q->dst->name);
+        printf("%s %s:\n", q->opcode, q->dst->name);
 
     else if (q->src2 == NULL)
         printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
@@ -749,13 +797,10 @@ void PopSymTab() {//pop from symbol table stack
 }//PopSymTab
 
 struct symbol* AddSym (char* name, enum dataType ty){
-    if(name[0] >= '1' && name[0] <= '9'){
-        struct symbol* sym = FindSymbol(name);
-        if(sym != NULL)
-            return sym;
-
-    }
-    else if(FindSymbolBlock(name) != NULL) {
+    struct symbol* s = FindSymbolBlock(name);
+    if(s != NULL) {
+        if(strcmp(name, "") == 0 || (name[0] >= '1' && name[0] <= '9'))
+            return s;
         printf("Syntax Error Redeclaration of variable/function %s\n", name);
         if(!DEBUG_MODE)
             exit(0);
@@ -802,15 +847,21 @@ struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, 
 }//GenQuad
 
 struct symbol* getFindSym(char* lexeme, enum dataType ty){
-    if(lexeme[0] < '0' || lexeme[0] > '9')
-        printf("%s %d\n", lexeme, ty);
+    //if(lexeme[0] < '0' || lexeme[0] > '9')
+    //    printf("%s %d\n", lexeme, ty);
     struct symbol* s = FindSymbol (lexeme);
     if (!s) {
         s = AddSym(lexeme, ty);
         if(lexeme[0] < '0' || lexeme[0] > '9')
             printf("undefined variable/function %s\n", lexeme);
+        if(!DEBUG_MODE)
+            exit(0);
     }
     return s;
+}
+
+void AddFunction(){
+    GenQuad("function", NULL, NULL, NULL);
 }
 
 void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3){

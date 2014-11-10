@@ -68,6 +68,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+int DEBUG_MODE = 1;
+
 enum dataType { integer, invalid, boolean, character, string, array, function, search, intArray, boolArray};
 //invalid - symbols that do not have a type
 
@@ -122,6 +124,10 @@ struct info {
 
 void yyerror (char const *s);
 
+int getOffset(enum dataType ty);
+
+enum dataType resolveType(enum dataType ty);
+
 int IncLabel();
 
 int GetLabel();
@@ -164,13 +170,15 @@ void PrintQuad (struct quadtab* q);
 
 void PrintList (struct backpatchList* l) ;
 
+void AddFunction();
+
 struct info* Init_PD2(struct info** x, char* y);
 void PrintTree (struct info* x);
 void Print (struct info* x, int l);
 void PrintTree2 (struct info* x);
 
 
-#line 174 "y.tab.c" /* yacc.c:339  */
+#line 182 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -308,7 +316,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 312 "y.tab.c" /* yacc.c:358  */
+#line 320 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -550,7 +558,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   171
+#define YYLAST   177
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  46
@@ -559,7 +567,7 @@ union yyalloc
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  85
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  168
+#define YYNSTATES  170
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
@@ -610,15 +618,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   126,   126,   133,   141,   144,   158,   173,   179,   185,
-     196,   200,   206,   212,   216,   220,   230,   234,   238,   242,
-     246,   251,   258,   258,   272,   280,   284,   291,   297,   301,
-     307,   318,   323,   324,   330,   338,   348,   354,   358,   360,
-     362,   367,   373,   376,   379,   385,   387,   393,   400,   407,
-     413,   415,   421,   425,   428,   432,   435,   437,   443,   445,
-     451,   453,   458,   465,   467,   472,   477,   482,   489,   491,
-     497,   505,   507,   513,   519,   527,   529,   534,   539,   541,
-     549,   555,   558,   562,   566,   572
+       0,   134,   134,   141,   149,   152,   166,   181,   192,   200,
+     211,   215,   221,   227,   231,   235,   245,   249,   253,   257,
+     261,   266,   273,   273,   288,   296,   300,   307,   313,   317,
+     323,   334,   339,   340,   346,   354,   364,   370,   374,   376,
+     378,   383,   389,   392,   395,   401,   403,   409,   416,   423,
+     429,   431,   437,   441,   444,   448,   451,   453,   463,   465,
+     475,   477,   482,   489,   491,   496,   501,   506,   513,   515,
+     521,   529,   531,   537,   543,   551,   553,   560,   565,   567,
+     575,   581,   584,   588,   592,   602
 };
 #endif
 
@@ -654,10 +662,10 @@ static const yytype_uint16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF -137
+#define YYPACT_NINF -107
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-137)))
+  (!!((Yystate) == (-107)))
 
 #define YYTABLE_NINF -52
 
@@ -668,23 +676,23 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-      40,    20,    61,    22,  -137,  -137,     0,    66,  -137,  -137,
-    -137,  -137,    73,    46,     2,    47,   100,    30,    47,    90,
-      89,   104,   105,    74,    93,    72,    97,  -137,  -137,  -137,
-    -137,    98,    78,    76,  -137,  -137,  -137,    80,    47,  -137,
-     103,  -137,  -137,    80,    97,  -137,  -137,    93,    81,  -137,
-     106,  -137,  -137,  -137,  -137,    47,   108,  -137,    82,   119,
-     109,  -137,    21,  -137,   108,  -137,    92,   122,    35,    94,
-     111,   113,    96,    48,    48,    65,  -137,  -137,   115,   116,
-     -19,   101,   107,   -28,    62,   -11,    51,  -137,  -137,  -137,
-      65,   112,   120,    65,    65,   121,  -137,  -137,    65,   123,
-      99,  -137,  -137,   110,  -137,  -137,    48,    48,    48,    48,
-      48,    48,    48,    48,    48,    48,    48,    48,    48,    48,
-      48,    48,   114,    65,    65,   126,   117,   118,   124,   125,
-    -137,    65,  -137,   101,   101,   101,   107,   -28,    62,    62,
-     -11,   -11,   -11,   -11,    51,    51,  -137,  -137,  -137,  -137,
-    -137,    80,    65,  -137,  -137,    64,  -137,  -137,   127,    80,
-    -137,   126,  -137,   133,  -137,  -137,    80,  -137
+      70,    20,    63,    39,  -107,  -107,     0,    78,  -107,  -107,
+    -107,  -107,   100,    71,     2,     6,   102,    -5,     6,    92,
+      91,   106,   107,    75,    96,    74,    99,  -107,  -107,  -107,
+    -107,   101,    80,    79,  -107,  -107,  -107,    83,     6,  -107,
+     108,  -107,  -107,    83,    99,  -107,  -107,    96,    82,  -107,
+     109,  -107,  -107,  -107,  -107,     6,   111,  -107,    86,   114,
+     112,  -107,    21,  -107,   111,  -107,    90,   125,    35,    95,
+     115,   116,   103,    48,    48,    65,  -107,  -107,   117,   118,
+      -4,    98,   104,    25,    19,    77,    51,  -107,  -107,  -107,
+      65,   110,   121,    65,    65,   126,  -107,  -107,    65,   124,
+     105,  -107,  -107,   113,  -107,  -107,    48,    48,    48,  -107,
+    -107,    48,    48,    48,    48,    48,    48,    48,    48,    48,
+      48,    48,   119,    65,    65,   127,   120,   122,   123,   128,
+    -107,    65,  -107,    98,    98,    98,    48,    48,    19,    19,
+      77,    77,    77,    77,    51,    51,  -107,  -107,  -107,  -107,
+    -107,    83,    65,  -107,  -107,    60,  -107,  -107,   129,   104,
+      25,    83,  -107,   127,  -107,   132,  -107,  -107,    83,  -107
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -702,22 +710,22 @@ static const yytype_uint8 yydefact[] =
        0,     0,    43,     0,     0,     0,    32,    30,     0,     0,
        0,    45,    56,    58,    60,    63,    68,    71,    78,    27,
        0,     0,     0,    53,     0,     0,    38,    39,     0,     0,
-      80,    77,    76,     0,    40,    33,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      80,    77,    76,     0,    40,    33,     0,     0,     0,    85,
+      85,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,    55,     0,     0,     0,     0,
-      37,     0,    75,    46,    47,    48,    57,    59,    62,    61,
+      37,     0,    75,    46,    47,    48,     0,     0,    62,    61,
       64,    65,    66,    67,    69,    70,    72,    73,    74,    85,
-      44,     0,     0,    52,    49,    79,    41,    42,     0,     0,
-      36,    55,    79,    34,    54,    85,     0,    35
+      44,     0,     0,    52,    49,    79,    41,    42,     0,    57,
+      59,     0,    36,    55,    79,    34,    54,    85,     0,    35
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -137,  -137,  -137,  -137,  -137,   -21,  -137,   130,   102,   -37,
-     -43,  -137,  -137,  -137,    77,  -137,  -137,  -137,  -137,  -137,
-    -137,   -73,  -137,  -137,   -10,    -6,    43,    45,   -81,   -20,
-     -12,   -67,   136,  -136
+    -107,  -107,  -107,  -107,  -107,   -21,  -107,   131,   130,   -37,
+     -43,  -107,  -107,  -107,    87,  -107,  -107,  -107,  -107,  -107,
+    -107,   -73,  -107,  -107,   -13,   -10,    16,    17,    -6,   -24,
+     -16,   -67,   138,  -106
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
@@ -734,46 +742,46 @@ static const yytype_int16 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      49,    47,   103,   111,   112,    41,   101,   102,     7,     8,
-       9,   117,   118,   159,   106,   107,   108,   122,    56,    76,
-     125,   127,    16,    50,     3,   129,    66,    67,    68,   166,
-     138,   139,    69,    70,    71,    17,    72,    27,    28,    29,
-      30,    18,    10,     1,    73,    19,    27,    28,    29,    30,
-     150,   151,   146,   147,   148,   100,    21,    22,   158,    74,
-      75,     4,    45,     5,    27,    28,    29,    30,   -50,   -50,
-     -50,    73,    68,    13,    93,   119,   120,   121,    94,   161,
-      14,    27,    28,    29,    30,    15,    74,    75,    73,   113,
-     114,   115,   116,   140,   141,   142,   143,   -51,   -51,   -51,
-     133,   134,   135,    74,    75,   144,   145,    25,   160,    33,
-      34,    35,    36,    38,    37,    40,   163,    16,    43,    42,
-      44,    45,    48,   167,    61,    53,    63,    54,    59,    91,
-      65,    90,    96,    95,    97,    98,   104,   105,   109,   128,
-     124,    89,   131,   110,   130,   123,   152,   165,    32,    52,
-     132,   164,   136,    31,   149,   137,     0,   154,     0,     0,
-       0,     0,   155,     0,   156,   157,     0,     0,     0,     0,
-       0,   162
+      49,    47,   103,   136,   137,    41,   101,   102,     7,     8,
+       9,    27,    28,    29,    30,    21,    22,   122,    56,    76,
+     125,   127,    16,    50,     3,   129,    66,    67,    68,   106,
+     107,   108,    69,    70,    71,    17,    72,    27,    28,    29,
+      30,    18,    10,   161,    73,    19,   113,   114,   115,   116,
+     150,   151,   146,   147,   148,   100,   111,   112,   158,    74,
+      75,   168,    45,     4,    27,    28,    29,    30,   -50,   -50,
+     -50,    73,    68,     1,    93,   119,   120,   121,    94,   163,
+       5,    27,    28,    29,    30,    13,    74,    75,    73,   140,
+     141,   142,   143,   -51,   -51,   -51,   133,   134,   135,   117,
+     118,   144,   145,    74,    75,   138,   139,    14,   162,    25,
+      15,    33,    34,    35,    36,    37,    38,    40,   165,    16,
+      43,    63,    42,    44,    45,   169,    53,    48,    61,    90,
+      54,    59,    91,    65,    95,   109,    96,    97,   104,   105,
+     110,   124,    98,   123,   128,   130,   167,   152,   131,    32,
+     166,    89,   159,   132,   160,    31,     0,     0,     0,   149,
+     154,     0,     0,   156,     0,     0,   155,     0,   157,     0,
+       0,     0,     0,   164,     0,     0,     0,    52
 };
 
 static const yytype_int16 yycheck[] =
 {
-      43,    38,    75,    31,    32,    26,    73,    74,     8,     9,
-      10,    22,    23,   149,    33,    34,    35,    90,    55,    62,
-      93,    94,    20,    44,     4,    98,     5,     6,     7,   165,
-     111,   112,    11,    12,    13,    33,    15,    16,    17,    18,
-      19,    39,    42,     3,    23,    43,    16,    17,    18,    19,
-     123,   124,   119,   120,   121,     7,     9,    10,   131,    38,
-      39,     0,    41,    41,    16,    17,    18,    19,    33,    34,
-      35,    23,     7,     7,    39,    24,    25,    26,    43,   152,
-       7,    16,    17,    18,    19,    39,    38,    39,    23,    27,
-      28,    29,    30,   113,   114,   115,   116,    33,    34,    35,
-     106,   107,   108,    38,    39,   117,   118,     7,   151,    19,
-      21,     7,     7,    20,    40,    43,   159,    20,    40,    21,
-      44,    41,    19,   166,    42,    44,     7,    21,    20,     7,
-      21,    39,    21,    39,    21,    39,    21,    21,    37,    18,
-      20,    64,    43,    36,    21,    33,    20,    14,    18,    47,
-      40,   161,   109,    17,    40,   110,    -1,    40,    -1,    -1,
-      -1,    -1,    44,    -1,    40,    40,    -1,    -1,    -1,    -1,
-      -1,    44
+      43,    38,    75,   109,   110,    26,    73,    74,     8,     9,
+      10,    16,    17,    18,    19,     9,    10,    90,    55,    62,
+      93,    94,    20,    44,     4,    98,     5,     6,     7,    33,
+      34,    35,    11,    12,    13,    33,    15,    16,    17,    18,
+      19,    39,    42,   149,    23,    43,    27,    28,    29,    30,
+     123,   124,   119,   120,   121,     7,    31,    32,   131,    38,
+      39,   167,    41,     0,    16,    17,    18,    19,    33,    34,
+      35,    23,     7,     3,    39,    24,    25,    26,    43,   152,
+      41,    16,    17,    18,    19,     7,    38,    39,    23,   113,
+     114,   115,   116,    33,    34,    35,   106,   107,   108,    22,
+      23,   117,   118,    38,    39,   111,   112,     7,   151,     7,
+      39,    19,    21,     7,     7,    40,    20,    43,   161,    20,
+      40,     7,    21,    44,    41,   168,    44,    19,    42,    39,
+      21,    20,     7,    21,    39,    37,    21,    21,    21,    21,
+      36,    20,    39,    33,    18,    21,    14,    20,    43,    18,
+     163,    64,   136,    40,   137,    17,    -1,    -1,    -1,    40,
+      40,    -1,    -1,    40,    -1,    -1,    44,    -1,    40,    -1,
+      -1,    -1,    -1,    44,    -1,    -1,    -1,    47
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -793,10 +801,10 @@ static const yytype_uint8 yystos[] =
        7,    77,    77,    67,    21,    21,    33,    34,    35,    37,
       36,    31,    32,    27,    28,    29,    30,    22,    23,    24,
       25,    26,    67,    33,    20,    67,    69,    67,    18,    67,
-      21,    43,    40,    71,    71,    71,    72,    73,    74,    74,
+      21,    43,    40,    71,    71,    71,    79,    79,    74,    74,
       75,    75,    75,    75,    76,    76,    77,    77,    77,    40,
-      67,    67,    20,    70,    40,    44,    40,    40,    67,    79,
-      56,    67,    44,    56,    70,    14,    79,    56
+      67,    67,    20,    70,    40,    44,    40,    40,    67,    72,
+      73,    79,    56,    67,    44,    56,    70,    14,    79,    56
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -821,7 +829,7 @@ static const yytype_uint8 yyr2[] =
        2,     2,     0,     5,     2,     0,     3,     3,     0,     1,
        3,     0,     1,     2,     6,     9,     5,     3,     2,     2,
        2,     4,     3,     0,     3,     1,     3,     3,     3,     4,
-       1,     4,     2,     0,     3,     0,     1,     3,     1,     3,
+       1,     4,     2,     0,     3,     0,     1,     4,     1,     4,
        1,     3,     3,     1,     3,     3,     3,     3,     1,     3,
        3,     1,     3,     3,     3,     3,     2,     2,     1,     4,
        1,     1,     1,     1,     1,     0
@@ -1501,17 +1509,17 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 126 "sample.y" /* yacc.c:1646  */
+#line 134 "sample.y" /* yacc.c:1646  */
     {	Init_PD2 (&(yyval), "program");
                                                 (yyval)->firstChild = (yyvsp[-1]);
                                                 PrintTree2((yyval));
                                                 PrintQuads();
                                             }
-#line 1511 "y.tab.c" /* yacc.c:1646  */
+#line 1519 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 133 "sample.y" /* yacc.c:1646  */
+#line 141 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "feild_methods");
                                                     if((yyvsp[-1])){
                                                         (yyval)->firstChild = (yyvsp[-1]);
@@ -1520,17 +1528,17 @@ yyreduce:
                                                     else
                                                         (yyval)->firstChild = (yyvsp[0]);
                                                 }
-#line 1524 "y.tab.c" /* yacc.c:1646  */
+#line 1532 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 141 "sample.y" /* yacc.c:1646  */
+#line 149 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "");  }
-#line 1530 "y.tab.c" /* yacc.c:1646  */
+#line 1538 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 144 "sample.y" /* yacc.c:1646  */
+#line 152 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "method_decl");
                                 (yyval)->firstChild = (yyvsp[-4]);
                                 if((yyvsp[-2])) {
@@ -1545,11 +1553,11 @@ yyreduce:
                                 GenQuad("halt", NULL, NULL, NULL);
                                 Backpatch((yyval)->nextlist, s);
                             }
-#line 1549 "y.tab.c" /* yacc.c:1646  */
+#line 1557 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 158 "sample.y" /* yacc.c:1646  */
+#line 166 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "method_decl");
                                         (yyval)->firstChild = (yyvsp[-4]);
                                         if((yyvsp[-2])) {
@@ -1565,33 +1573,40 @@ yyreduce:
                                         GenQuad("halt", NULL, NULL, NULL);
                                         Backpatch((yyval)->nextlist, s);
                                     }
-#line 1569 "y.tab.c" /* yacc.c:1646  */
+#line 1577 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 173 "sample.y" /* yacc.c:1646  */
-    {   Init_PD2(&(yyval), "array");
+#line 181 "sample.y" /* yacc.c:1646  */
+    {   Init_PD2(&(yyval), "feild_decl");
                                             (yyval)->firstChild = (yyvsp[-6]);
                                             (yyvsp[-6])->nextSibling = (yyvsp[-5]);
                                             (yyvsp[-5])->nextSibling = (yyvsp[-3]);
                                             (yyvsp[-3])->nextSibling = (yyvsp[-1]);
+                                            (yyvsp[-5])->sym = AddSym((yyvsp[-5])->lexeme, (yyvsp[-6])->type == integer?intArray:boolArray);
+                                            (yyvsp[-5])->sym->arraySize = (yyvsp[-3])->sym;
+                                            MergeBackpatch(&((yyval)->typelist), (yyvsp[-1])->typelist);
+                                            UpdateType((yyval)->typelist, (yyvsp[-6])->type);
+
                                         }
-#line 1580 "y.tab.c" /* yacc.c:1646  */
+#line 1593 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 179 "sample.y" /* yacc.c:1646  */
+#line 192 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "feild_decl");
                                     (yyval)->firstChild = (yyvsp[-3]);
                                     (yyvsp[-3])->nextSibling = (yyvsp[-2]);
                                     (yyvsp[-2])->nextSibling = (yyvsp[-1]);
-                                    UpdateType((yyval)->nextlist, (yyvsp[-3])->type);
+                                    AddSym((yyvsp[-2])->lexeme, (yyvsp[-3])->type);
+                                    MergeBackpatch(&((yyval)->typelist), (yyvsp[-1])->typelist);
+                                    UpdateType((yyval)->typelist, (yyvsp[-3])->type);
                                 }
-#line 1591 "y.tab.c" /* yacc.c:1646  */
+#line 1606 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 185 "sample.y" /* yacc.c:1646  */
+#line 200 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "feild_decl");
                                         (yyval)->firstChild = (yyvsp[-4]);
                                         (yyvsp[-4])->nextSibling = (yyvsp[-3]);
@@ -1601,56 +1616,56 @@ yyreduce:
                                         (yyval)->type = (yyvsp[-4])->type;
                                         GenQuad("=", (yyvsp[-1])->sym, NULL, (yyval)->sym);
                                     }
-#line 1605 "y.tab.c" /* yacc.c:1646  */
+#line 1620 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 196 "sample.y" /* yacc.c:1646  */
+#line 211 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "int");
                     (yyval)->type = integer;
                     //$$->firstChild = $1;
                 }
-#line 1614 "y.tab.c" /* yacc.c:1646  */
+#line 1629 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 200 "sample.y" /* yacc.c:1646  */
+#line 215 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "bool");
                     (yyval)->type = boolean;
                     //$$->firstChild = $1;
                 }
-#line 1623 "y.tab.c" /* yacc.c:1646  */
+#line 1638 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 206 "sample.y" /* yacc.c:1646  */
+#line 221 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "feild");
                                         (yyval)->firstChild = (yyvsp[-1]);
                                         (yyvsp[-1])->nextSibling = (yyvsp[0]);
-                                        MergeBackpatch(&((yyval)->nextlist), (yyvsp[-1])->nextlist);
-                                        MergeBackpatch(&((yyval)->nextlist), (yyvsp[0])->nextlist);
+                                        MergeBackpatch(&((yyval)->typelist), (yyvsp[-1])->typelist);
+                                        MergeBackpatch(&((yyval)->typelist), (yyvsp[0])->typelist);
                                     }
-#line 1634 "y.tab.c" /* yacc.c:1646  */
+#line 1649 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 212 "sample.y" /* yacc.c:1646  */
-    {   (yyval) = NULL;
+#line 227 "sample.y" /* yacc.c:1646  */
+    {   Init_PD2(&(yyval), "");
             }
-#line 1641 "y.tab.c" /* yacc.c:1646  */
+#line 1656 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 216 "sample.y" /* yacc.c:1646  */
+#line 231 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                     (yyval)->sym = AddSym((yyvsp[0])->lexeme, invalid);
                     InsertTargetSym(&((yyval)->typelist), (yyval)->sym);
                 }
-#line 1650 "y.tab.c" /* yacc.c:1646  */
+#line 1665 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 220 "sample.y" /* yacc.c:1646  */
+#line 235 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "array");
                                     (yyval)->firstChild = (yyvsp[-3]);
                                     (yyvsp[-3])->nextSibling = (yyvsp[-1]);
@@ -1659,69 +1674,69 @@ yyreduce:
                                     (yyval)->sym->arraySize = (yyvsp[-1])->sym;
                                     InsertTargetSym(&((yyval)->typelist), (yyval)->sym);
                                 }
-#line 1663 "y.tab.c" /* yacc.c:1646  */
+#line 1678 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 230 "sample.y" /* yacc.c:1646  */
+#line 245 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "args");
                             (yyval)->firstChild = (yyvsp[-1]);
                             (yyvsp[-1])->nextSibling = (yyvsp[0]);
                         }
-#line 1672 "y.tab.c" /* yacc.c:1646  */
+#line 1687 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 234 "sample.y" /* yacc.c:1646  */
+#line 249 "sample.y" /* yacc.c:1646  */
     {   (yyval) = NULL;
             }
-#line 1679 "y.tab.c" /* yacc.c:1646  */
+#line 1694 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 238 "sample.y" /* yacc.c:1646  */
+#line 253 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "args");
                                 (yyval)->firstChild = (yyvsp[-1]);
                                 (yyvsp[-1])->nextSibling = (yyvsp[0]);
                             }
-#line 1688 "y.tab.c" /* yacc.c:1646  */
+#line 1703 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 242 "sample.y" /* yacc.c:1646  */
+#line 257 "sample.y" /* yacc.c:1646  */
     {   (yyval) = NULL;
             }
-#line 1695 "y.tab.c" /* yacc.c:1646  */
+#line 1710 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 246 "sample.y" /* yacc.c:1646  */
+#line 261 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "bool");
                     (yyval)->firstChild = (yyvsp[0]);
                     (yyval)->sym = AddSym((yyvsp[0])->lexeme, boolean);
                     (yyval)->type = boolean;
                 }
-#line 1705 "y.tab.c" /* yacc.c:1646  */
+#line 1720 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 251 "sample.y" /* yacc.c:1646  */
+#line 266 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "int");
                     (yyval)->firstChild = (yyvsp[0]);
                     (yyval)->sym = AddSym((yyvsp[0])->lexeme, integer);
                     (yyval)->type = integer;
                 }
-#line 1715 "y.tab.c" /* yacc.c:1646  */
+#line 1730 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 258 "sample.y" /* yacc.c:1646  */
+#line 273 "sample.y" /* yacc.c:1646  */
     { PushSymTab(); }
-#line 1721 "y.tab.c" /* yacc.c:1646  */
+#line 1736 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 258 "sample.y" /* yacc.c:1646  */
+#line 273 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "block");
                                         if((yyvsp[-2])){
                                             (yyval)->firstChild = (yyvsp[-2]);
@@ -1731,14 +1746,15 @@ yyreduce:
                                             (yyval)->firstChild = (yyvsp[-1]);
                                         MergeBackpatch(&((yyval)->nextlist), (yyvsp[-2])->nextlist);
                                         MergeBackpatch(&((yyval)->nextlist), (yyvsp[-1])->nextlist);
-                                        //PrintSymbols();
+                                        if(DEBUG_MODE)
+                                            PrintSymbols();
                                         PopSymTab();
                                     }
-#line 1738 "y.tab.c" /* yacc.c:1646  */
+#line 1754 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 272 "sample.y" /* yacc.c:1646  */
+#line 288 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "var_decls");
                                         if((yyvsp[-1])){
                                             (yyval)->firstChild = (yyvsp[-1]);
@@ -1747,55 +1763,55 @@ yyreduce:
                                         else
                                             (yyval)->firstChild = (yyvsp[0]);
                                     }
-#line 1751 "y.tab.c" /* yacc.c:1646  */
+#line 1767 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 280 "sample.y" /* yacc.c:1646  */
+#line 296 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "");
             }
-#line 1758 "y.tab.c" /* yacc.c:1646  */
+#line 1774 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 284 "sample.y" /* yacc.c:1646  */
+#line 300 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "var_decl");
                                     (yyval)->firstChild = (yyvsp[-2]);
                                     (yyvsp[-2])->nextSibling = (yyvsp[-1]);
                                     UpdateType((yyvsp[-1])->typelist, (yyvsp[-2])->sym->type);
                                 }
-#line 1768 "y.tab.c" /* yacc.c:1646  */
+#line 1784 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 291 "sample.y" /* yacc.c:1646  */
+#line 307 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "var");
                                 (yyval)->firstChild = (yyvsp[-1]);
                                 (yyvsp[-1])->nextSibling = (yyvsp[0]);
                                 MergeBackpatch(&((yyval)->typelist), (yyvsp[-1])->typelist);
                                 MergeBackpatch(&((yyval)->typelist), (yyvsp[0])->typelist);
                             }
-#line 1779 "y.tab.c" /* yacc.c:1646  */
+#line 1795 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 297 "sample.y" /* yacc.c:1646  */
+#line 313 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "");
             }
-#line 1786 "y.tab.c" /* yacc.c:1646  */
+#line 1802 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 301 "sample.y" /* yacc.c:1646  */
+#line 317 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                 (yyvsp[0])->sym = AddSym((yyvsp[0])->lexeme, invalid);
                 InsertTargetSym(&((yyval)->typelist), (yyvsp[0])->sym);
             }
-#line 1795 "y.tab.c" /* yacc.c:1646  */
+#line 1811 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 307 "sample.y" /* yacc.c:1646  */
+#line 323 "sample.y" /* yacc.c:1646  */
     {	Init_PD2 (&(yyval), "stmts");
                             if ((yyvsp[-2])) {
                                 (yyval)->firstChild = (yyvsp[-2]);
@@ -1807,36 +1823,36 @@ yyreduce:
                             Backpatch((yyvsp[-2])->nextlist, (yyvsp[-1])->sym);
                             MergeBackpatch(&((yyval)->nextlist), (yyvsp[0])->nextlist);
                         }
-#line 1811 "y.tab.c" /* yacc.c:1646  */
+#line 1827 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 318 "sample.y" /* yacc.c:1646  */
+#line 334 "sample.y" /* yacc.c:1646  */
     {	Init_PD2(&(yyval), "");
                     PrintTree((yyval));
                 }
-#line 1819 "y.tab.c" /* yacc.c:1646  */
+#line 1835 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 323 "sample.y" /* yacc.c:1646  */
+#line 339 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]); }
-#line 1825 "y.tab.c" /* yacc.c:1646  */
+#line 1841 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 324 "sample.y" /* yacc.c:1646  */
+#line 340 "sample.y" /* yacc.c:1646  */
     {	Init_PD2 (&(yyval), "eval");
                             (yyval)->firstChild = (yyvsp[-1]);
                             PrintTree((yyval));
                             MergeBackpatch(&((yyval)->nextlist), (yyvsp[-1])->truelist);
                             MergeBackpatch(&((yyval)->nextlist), (yyvsp[-1])->falselist);
                         }
-#line 1836 "y.tab.c" /* yacc.c:1646  */
+#line 1852 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 330 "sample.y" /* yacc.c:1646  */
+#line 346 "sample.y" /* yacc.c:1646  */
     {   Init_PD2 (&(yyval), "if");
                                     (yyval)->firstChild = (yyvsp[-3]);
                                     (yyvsp[-3])->nextSibling = (yyvsp[0]);
@@ -1845,11 +1861,11 @@ yyreduce:
                                     MergeBackpatch(&((yyval)->nextlist), (yyvsp[-3])->falselist);
                                     MergeBackpatch(&((yyval)->nextlist), (yyvsp[0])->nextlist);
                                 }
-#line 1849 "y.tab.c" /* yacc.c:1646  */
+#line 1865 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 338 "sample.y" /* yacc.c:1646  */
+#line 354 "sample.y" /* yacc.c:1646  */
     {   Init_PD2 (&(yyval), "if");
                                     (yyval)->firstChild = (yyvsp[-6]);
                                     (yyvsp[-6])->nextSibling = (yyvsp[-3]);
@@ -1860,103 +1876,103 @@ yyreduce:
                                     MergeBackpatch(&((yyval)->nextlist), (yyvsp[-3])->nextlist);
                                     MergeBackpatch(&((yyval)->nextlist), (yyvsp[0])->nextlist);
                                 }
-#line 1864 "y.tab.c" /* yacc.c:1646  */
+#line 1880 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 348 "sample.y" /* yacc.c:1646  */
+#line 364 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "for");
                                         (yyval)->firstChild = (yyvsp[-3]);
                                         (yyvsp[-3])->nextSibling = (yyvsp[-1]);
                                         (yyvsp[-1])->nextSibling = (yyvsp[0]);
                                         PrintTree((yyval));
                                     }
-#line 1875 "y.tab.c" /* yacc.c:1646  */
+#line 1891 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 354 "sample.y" /* yacc.c:1646  */
+#line 370 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "return");
                             (yyval)->firstChild = (yyvsp[-2]);
                             (yyvsp[-2])->nextSibling = (yyvsp[-1]);
                         }
-#line 1884 "y.tab.c" /* yacc.c:1646  */
+#line 1900 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 358 "sample.y" /* yacc.c:1646  */
+#line 374 "sample.y" /* yacc.c:1646  */
     {  (yyval) = (yyvsp[-1]);
                 }
-#line 1891 "y.tab.c" /* yacc.c:1646  */
+#line 1907 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 360 "sample.y" /* yacc.c:1646  */
+#line 376 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[-1]);
                 }
-#line 1898 "y.tab.c" /* yacc.c:1646  */
+#line 1914 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 362 "sample.y" /* yacc.c:1646  */
+#line 378 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "method_call");
                         (yyval)->firstChild = (yyvsp[-1]);
     }
-#line 1906 "y.tab.c" /* yacc.c:1646  */
+#line 1922 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 367 "sample.y" /* yacc.c:1646  */
+#line 383 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "callout");
                                                     (yyval)->firstChild = (yyvsp[-1]);
                                                     (yyvsp[-1])->nextSibling = (yyvsp[0]);
         }
-#line 1915 "y.tab.c" /* yacc.c:1646  */
+#line 1931 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 373 "sample.y" /* yacc.c:1646  */
+#line 389 "sample.y" /* yacc.c:1646  */
     {  (yyval) = (yyvsp[-1]);
 
                             }
-#line 1923 "y.tab.c" /* yacc.c:1646  */
+#line 1939 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 376 "sample.y" /* yacc.c:1646  */
+#line 392 "sample.y" /* yacc.c:1646  */
     {   (yyval) = NULL;  }
-#line 1929 "y.tab.c" /* yacc.c:1646  */
+#line 1945 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 379 "sample.y" /* yacc.c:1646  */
+#line 395 "sample.y" /* yacc.c:1646  */
     { Init_PD2(&(yyval), "assign");
                             (yyval)->firstChild = (yyvsp[-2]);
                             (yyvsp[-2])->nextSibling = (yyvsp[0]);
                         }
-#line 1938 "y.tab.c" /* yacc.c:1646  */
+#line 1954 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 385 "sample.y" /* yacc.c:1646  */
+#line 401 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                         }
-#line 1945 "y.tab.c" /* yacc.c:1646  */
+#line 1961 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 387 "sample.y" /* yacc.c:1646  */
+#line 403 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "assign_op");
                             (yyval)->firstChild = (yyvsp[-2]);
                             (yyvsp[-2])->nextSibling = (yyvsp[0]);
                             (yyval)->sym = FindSymbol((yyvsp[-2])->lexeme);
                             GenQuad("=", (yyvsp[0])->sym, NULL, (yyval)->sym);
                         }
-#line 1956 "y.tab.c" /* yacc.c:1646  */
+#line 1972 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 393 "sample.y" /* yacc.c:1646  */
+#line 409 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "plus_eq");
                             (yyval)->firstChild = (yyvsp[-2]);
                             (yyvsp[-2])->nextSibling = (yyvsp[0]);
@@ -1964,11 +1980,11 @@ yyreduce:
                             GenQuad("+", (yyval)->sym, (yyvsp[0])->sym, (yyval)->sym);
                             //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
-#line 1968 "y.tab.c" /* yacc.c:1646  */
+#line 1984 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 400 "sample.y" /* yacc.c:1646  */
+#line 416 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "minus_eq");
                             (yyval)->firstChild = (yyvsp[-2]);
                             (yyvsp[-2])->nextSibling = (yyvsp[0]);
@@ -1976,341 +1992,355 @@ yyreduce:
                             GenQuad("-", (yyval)->sym, (yyvsp[0])->sym, (yyval)->sym);
                             //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
-#line 1980 "y.tab.c" /* yacc.c:1646  */
+#line 1996 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 407 "sample.y" /* yacc.c:1646  */
+#line 423 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "method_call");
                                 (yyval)->firstChild = (yyvsp[-3]);
                                 (yyvsp[-3])->nextSibling = (yyvsp[-1]);
                             }
-#line 1989 "y.tab.c" /* yacc.c:1646  */
+#line 2005 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 413 "sample.y" /* yacc.c:1646  */
+#line 429 "sample.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]);
     }
-#line 1996 "y.tab.c" /* yacc.c:1646  */
+#line 2012 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 415 "sample.y" /* yacc.c:1646  */
+#line 431 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "array");
                             (yyval)->firstChild = (yyvsp[-3]);
                             (yyvsp[-3])->nextSibling = (yyvsp[-1]);
     }
-#line 2005 "y.tab.c" /* yacc.c:1646  */
+#line 2021 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 421 "sample.y" /* yacc.c:1646  */
+#line 437 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "args");
                                         (yyval)->firstChild = (yyvsp[-1]);
                                         (yyvsp[-1])->nextSibling = (yyvsp[0]);
                                     }
-#line 2014 "y.tab.c" /* yacc.c:1646  */
+#line 2030 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 425 "sample.y" /* yacc.c:1646  */
+#line 441 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), ""); }
-#line 2020 "y.tab.c" /* yacc.c:1646  */
+#line 2036 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 428 "sample.y" /* yacc.c:1646  */
+#line 444 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "args");
                                             (yyval)->firstChild = (yyvsp[-1]);
                                             (yyvsp[-1])->nextSibling = (yyvsp[0]);
     }
-#line 2029 "y.tab.c" /* yacc.c:1646  */
+#line 2045 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 432 "sample.y" /* yacc.c:1646  */
+#line 448 "sample.y" /* yacc.c:1646  */
     {   (yyval) = NULL;  }
-#line 2035 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 56:
-#line 435 "sample.y" /* yacc.c:1646  */
-    {   (yyval) = (yyvsp[0]);
-                        }
-#line 2042 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 57:
-#line 437 "sample.y" /* yacc.c:1646  */
-    {   Init_PD2(&(yyval), "cond_OR");
-                                (yyval)->firstChild = (yyvsp[-2]);
-                                (yyvsp[-2])->nextSibling = (yyvsp[0]);
-                            }
 #line 2051 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 58:
-#line 443 "sample.y" /* yacc.c:1646  */
+  case 56:
+#line 451 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                         }
 #line 2058 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 57:
+#line 453 "sample.y" /* yacc.c:1646  */
+    {   Init_PD2(&(yyval), "cond_OR");
+                                (yyval)->firstChild = (yyvsp[-3]);
+                                (yyvsp[-3])->nextSibling = (yyvsp[0]);
+                                Backpatch((yyval)->falselist, (yyvsp[-1])->sym);
+                                MergeBackpatch(&((yyval)->truelist), (yyvsp[-3])->truelist);
+                                MergeBackpatch(&((yyval)->truelist), (yyvsp[0])->truelist);
+                                MergeBackpatch(&((yyval)->falselist), (yyvsp[0])->falselist);
+                            }
+#line 2071 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 58:
+#line 463 "sample.y" /* yacc.c:1646  */
+    {   (yyval) = (yyvsp[0]);
+                        }
+#line 2078 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 59:
-#line 445 "sample.y" /* yacc.c:1646  */
+#line 465 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "cond_AND");
-                                    (yyval)->firstChild = (yyvsp[-2]);
-                                    (yyvsp[-2])->nextSibling = (yyvsp[0]);
+                                    (yyval)->firstChild = (yyvsp[-3]);
+                                    (yyvsp[-3])->nextSibling = (yyvsp[0]);
+                                    Backpatch((yyval)->truelist, (yyvsp[-1])->sym);
+                                    MergeBackpatch(&((yyval)->falselist), (yyvsp[-3])->falselist);
+                                    MergeBackpatch(&((yyval)->falselist), (yyvsp[0])->falselist);
+                                    MergeBackpatch(&((yyval)->truelist), (yyvsp[0])->truelist);
                                 }
-#line 2067 "y.tab.c" /* yacc.c:1646  */
+#line 2091 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 451 "sample.y" /* yacc.c:1646  */
+#line 475 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                         }
-#line 2074 "y.tab.c" /* yacc.c:1646  */
+#line 2098 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 453 "sample.y" /* yacc.c:1646  */
+#line 477 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "EQUAL");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 rel_operation("==", (yyval), (yyvsp[-2]), (yyvsp[0]));
                             }
-#line 2084 "y.tab.c" /* yacc.c:1646  */
+#line 2108 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 458 "sample.y" /* yacc.c:1646  */
+#line 482 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "NOT_EQUAL");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 rel_operation("!=", (yyval), (yyvsp[-2]), (yyvsp[0]));
                             }
-#line 2094 "y.tab.c" /* yacc.c:1646  */
+#line 2118 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 465 "sample.y" /* yacc.c:1646  */
+#line 489 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                     }
-#line 2101 "y.tab.c" /* yacc.c:1646  */
+#line 2125 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 467 "sample.y" /* yacc.c:1646  */
+#line 491 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "LESS_THAN");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 rel_operation("<", (yyval), (yyvsp[-2]), (yyvsp[0]));
                             }
-#line 2111 "y.tab.c" /* yacc.c:1646  */
+#line 2135 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 472 "sample.y" /* yacc.c:1646  */
+#line 496 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "GREATER_THAN");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 rel_operation(">", (yyval), (yyvsp[-2]), (yyvsp[0]));
                             }
-#line 2121 "y.tab.c" /* yacc.c:1646  */
+#line 2145 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 477 "sample.y" /* yacc.c:1646  */
+#line 501 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "LESS_EQUAL");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 rel_operation("<=", (yyval), (yyvsp[-2]), (yyvsp[0]));
                             }
-#line 2131 "y.tab.c" /* yacc.c:1646  */
+#line 2155 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 482 "sample.y" /* yacc.c:1646  */
+#line 506 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "GREATER_EQUAL");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 rel_operation(">=", (yyval), (yyvsp[-2]), (yyvsp[0]));
                             }
-#line 2141 "y.tab.c" /* yacc.c:1646  */
+#line 2165 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 489 "sample.y" /* yacc.c:1646  */
+#line 513 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                         }
-#line 2148 "y.tab.c" /* yacc.c:1646  */
+#line 2172 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 491 "sample.y" /* yacc.c:1646  */
+#line 515 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "plus");
                                         (yyval)->firstChild = (yyvsp[-2]);
                                         (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                         (yyval)->sym = GenSym(integer);
                                         GenQuad("+", (yyvsp[-2])->sym, (yyvsp[0])->sym, (yyval)->sym);
                                     }
-#line 2159 "y.tab.c" /* yacc.c:1646  */
+#line 2183 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 497 "sample.y" /* yacc.c:1646  */
+#line 521 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "minus");
                                     (yyval)->firstChild = (yyvsp[-2]);
                                     (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                     (yyval)->sym = GenSym(integer);
                                     GenQuad("-", (yyvsp[-2])->sym, (yyvsp[0])->sym, (yyval)->sym);
                                 }
-#line 2170 "y.tab.c" /* yacc.c:1646  */
+#line 2194 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 505 "sample.y" /* yacc.c:1646  */
+#line 529 "sample.y" /* yacc.c:1646  */
     {   (yyval) = (yyvsp[0]);
                         }
-#line 2177 "y.tab.c" /* yacc.c:1646  */
+#line 2201 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 72:
-#line 507 "sample.y" /* yacc.c:1646  */
+#line 531 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "mul");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 (yyval)->sym = GenSym(integer);
                                 GenQuad("*", (yyvsp[-2])->sym, (yyvsp[0])->sym, (yyval)->sym);
                             }
-#line 2188 "y.tab.c" /* yacc.c:1646  */
+#line 2212 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 513 "sample.y" /* yacc.c:1646  */
+#line 537 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "div");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 (yyval)->sym = GenSym(integer);
                                 GenQuad("/", (yyvsp[-2])->sym, (yyvsp[0])->sym, (yyval)->sym);
                             }
-#line 2199 "y.tab.c" /* yacc.c:1646  */
+#line 2223 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 519 "sample.y" /* yacc.c:1646  */
+#line 543 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "mod");
                                 (yyval)->firstChild = (yyvsp[-2]);
                                 (yyvsp[-2])->nextSibling = (yyvsp[0]);
                                 (yyval)->sym = GenSym(integer);
                                 GenQuad("%", (yyvsp[-2])->sym, (yyvsp[0])->sym, (yyval)->sym);
                             }
-#line 2210 "y.tab.c" /* yacc.c:1646  */
+#line 2234 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 75:
-#line 527 "sample.y" /* yacc.c:1646  */
+#line 551 "sample.y" /* yacc.c:1646  */
     {	(yyval) = (yyvsp[-1]);
                             }
-#line 2217 "y.tab.c" /* yacc.c:1646  */
+#line 2241 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 529 "sample.y" /* yacc.c:1646  */
+#line 553 "sample.y" /* yacc.c:1646  */
     {	Init_PD2 (&(yyval), "cond_NOT");
                                     (yyval)->firstChild = (yyvsp[0]);
                                     (yyval)->sym = GenSym(boolean);
                                     GenQuad("!", (yyvsp[0])->sym,NULL, (yyval)->sym);
+                                    MergeBackpatch(&((yyval)->truelist), (yyvsp[0])->falselist);
+                                    MergeBackpatch(&((yyval)->falselist), (yyvsp[0])->truelist);
                                 }
-#line 2227 "y.tab.c" /* yacc.c:1646  */
+#line 2253 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 534 "sample.y" /* yacc.c:1646  */
+#line 560 "sample.y" /* yacc.c:1646  */
     {	Init_PD2 (&(yyval), "NEG");
                                         (yyval)->firstChild = (yyvsp[0]);
                                         (yyval)->sym = GenSym(integer);
                                         GenQuad("-", (yyvsp[0])->sym, NULL, (yyval)->sym);
                                     }
-#line 2237 "y.tab.c" /* yacc.c:1646  */
+#line 2263 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 539 "sample.y" /* yacc.c:1646  */
+#line 565 "sample.y" /* yacc.c:1646  */
     {	(yyval) = (yyvsp[0]);
                     }
-#line 2244 "y.tab.c" /* yacc.c:1646  */
+#line 2270 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 541 "sample.y" /* yacc.c:1646  */
+#line 567 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), "array");
                             (yyval)->firstChild = (yyvsp[-3]);
                             (yyvsp[-3])->nextSibling = (yyvsp[-1]);
                             (yyvsp[-3])->sym = FindSymbol((yyvsp[-3])->lexeme);
-                            (yyval)->sym = GenSym((yyvsp[-3])->sym->type);
+                            (yyval)->sym = GenSym(resolveType((yyvsp[-3])->sym->type));
                             GenQuad("=", (yyvsp[-3])->sym, (yyvsp[-1])->sym, (yyval)->sym);
 
-                        }
-#line 2257 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 80:
-#line 549 "sample.y" /* yacc.c:1646  */
-    {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
-                (yyval)->sym = FindSymbol((yyvsp[0])->lexeme);
-                //$$->firstChild = $1;
-            }
-#line 2266 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 81:
-#line 555 "sample.y" /* yacc.c:1646  */
-    {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
-                            (yyval)->sym = AddSym((yyvsp[0])->lexeme, integer);
-                        }
-#line 2274 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 82:
-#line 558 "sample.y" /* yacc.c:1646  */
-    {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
-                            (yyval)->sym = AddSym((yyvsp[0])->lexeme, string);
-                            //$$->firstChild = $1;
                         }
 #line 2283 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 80:
+#line 575 "sample.y" /* yacc.c:1646  */
+    {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
+                (yyval)->sym = FindSymbol((yyvsp[0])->lexeme);
+                //$$->firstChild = $1;
+            }
+#line 2292 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 81:
+#line 581 "sample.y" /* yacc.c:1646  */
+    {	Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
+                            (yyval)->sym = AddSym((yyvsp[0])->lexeme, integer);
+                        }
+#line 2300 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 82:
+#line 584 "sample.y" /* yacc.c:1646  */
+    {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
+                            (yyval)->sym = AddSym((yyvsp[0])->lexeme, string);
+                            //$$->firstChild = $1;
+                        }
+#line 2309 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 83:
-#line 562 "sample.y" /* yacc.c:1646  */
+#line 588 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = AddSym((yyvsp[0])->lexeme, character);
                             //$$->firstChild = $1;
                         }
-#line 2292 "y.tab.c" /* yacc.c:1646  */
+#line 2318 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 566 "sample.y" /* yacc.c:1646  */
+#line 592 "sample.y" /* yacc.c:1646  */
     {   Init_PD2(&(yyval), (yyvsp[0])->PD2_type);
                             (yyval)->sym = AddSym((yyvsp[0])->lexeme, boolean);
-                            //$$->firstChild = $1;
+                            struct quadtab* q1 = GenQuad("goto", (yyval)->sym, NULL, NULL);
+                            if(strcmp((yyvsp[0])->lexeme, "true"))
+                                InsertTarget(&((yyval)->truelist), q1);
+                            else
+                                InsertTarget(&((yyval)->falselist), q1);
                         }
-#line 2301 "y.tab.c" /* yacc.c:1646  */
+#line 2331 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 572 "sample.y" /* yacc.c:1646  */
+#line 602 "sample.y" /* yacc.c:1646  */
     {
             Init_PD2(&(yyval), "");
             (yyval)->sym = InstallLabel();
     }
-#line 2310 "y.tab.c" /* yacc.c:1646  */
+#line 2340 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2314 "y.tab.c" /* yacc.c:1646  */
+#line 2344 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2538,14 +2568,26 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 577 "sample.y" /* yacc.c:1906  */
+#line 607 "sample.y" /* yacc.c:1906  */
 
 
 #include "lex.yy.c"
 
-int DEBUG_MODE = 1;
-
 int quadid = 1;
+
+int getOffset(enum dataType ty){
+    if(intArray == ty)
+        return 4;
+    else
+        return 1;
+}
+
+enum dataType resolveType(enum dataType ty){
+    if(ty == intArray)
+        return integer;
+    else
+        return boolean;
+}
 
 int IncLabel(){
     quadid ++;
@@ -2620,7 +2662,7 @@ void UpdateType(struct backpatchList* x, enum dataType ty){
     struct backpatchList* toPatch = x;
     while(toPatch != NULL){
         struct symbol* s = toPatch->sym;
-        printf("%s %d->%d \n", s->name, s->type, ty);
+        //printf("%s %d->%d \n", s->name, s->type, ty);
         if(s->type == array){
             if(ty == integer)
                 s->type = intArray;
@@ -2634,6 +2676,11 @@ void UpdateType(struct backpatchList* x, enum dataType ty){
 }
 
 struct symbol* FindSymbol(char* lexeme){
+    if(strcmp(lexeme, "") == 0)
+        return AddSym(lexeme, invalid);
+    if(lexeme[0] >= '1' && lexeme[0] <= '9'){
+        return AddSym(lexeme, integer);
+    }
     struct symtab* s = symStack;
     while (s != NULL) {
         struct symbol* sym = s->symbols;
@@ -2644,7 +2691,8 @@ struct symbol* FindSymbol(char* lexeme){
         }
         s = s->next;
     }
-    printf("undefined variable/function %s\n", lexeme);
+
+    printf("FS undefined variable/function %s\n", lexeme);
     if(!DEBUG_MODE){
         exit(0);
     }
@@ -2692,7 +2740,7 @@ void PrintQuad(struct quadtab* q) {
         printf("L%d: halt\n", q->idx);
 
     else if(strcmp(q->opcode, "function") == 0)
-        printf("%s %s starts\n", q->opcode, q->dst->name);
+        printf("%s %s:\n", q->opcode, q->dst->name);
 
     else if (q->src2 == NULL)
         printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
@@ -2714,13 +2762,10 @@ void PopSymTab() {//pop from symbol table stack
 }//PopSymTab
 
 struct symbol* AddSym (char* name, enum dataType ty){
-    if(name[0] >= '1' && name[0] <= '9'){
-        struct symbol* sym = FindSymbol(name);
-        if(sym != NULL)
-            return sym;
-
-    }
-    else if(FindSymbolBlock(name) != NULL) {
+    struct symbol* s = FindSymbolBlock(name);
+    if(s != NULL) {
+        if(strcmp(name, "") == 0 || (name[0] >= '1' && name[0] <= '9'))
+            return s;
         printf("Syntax Error Redeclaration of variable/function %s\n", name);
         if(!DEBUG_MODE)
             exit(0);
@@ -2767,15 +2812,21 @@ struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, 
 }//GenQuad
 
 struct symbol* getFindSym(char* lexeme, enum dataType ty){
-    if(lexeme[0] < '0' || lexeme[0] > '9')
-        printf("%s %d\n", lexeme, ty);
+    //if(lexeme[0] < '0' || lexeme[0] > '9')
+    //    printf("%s %d\n", lexeme, ty);
     struct symbol* s = FindSymbol (lexeme);
     if (!s) {
         s = AddSym(lexeme, ty);
         if(lexeme[0] < '0' || lexeme[0] > '9')
             printf("undefined variable/function %s\n", lexeme);
+        if(!DEBUG_MODE)
+            exit(0);
     }
     return s;
+}
+
+void AddFunction(){
+    GenQuad("function", NULL, NULL, NULL);
 }
 
 void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3){

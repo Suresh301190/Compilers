@@ -1,10 +1,17 @@
 class Program{
 
-	int a[5];
+
+	int x, y, z, a[8];
+	int b[10];
+	bool c[5];
 
 	int main(){
-		int x, y, z;
-		x = z + 5;
-		a[1] = 5;
+		int i, j, k;
+		x = 5;
+		y = a[8];
+
+		if(x < y || y == 0){
+			z = 2;
+		}
 	}
 }
