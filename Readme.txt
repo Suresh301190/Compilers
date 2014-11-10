@@ -1,9 +1,9 @@
 /*
- * Project Deliverable 2: Compilers
+ * Project Deliverable 3: Compilers
  * @author
  * Suresh Rangaswamy
  * MT13017
- * 13 October 2014
+ * 11 Nov 2014
  *
  *
  * Usage: (1.a) $ yacc -d sample.y

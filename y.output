@@ -57,7 +57,7 @@ Grammar
    34     | expr_a SEMCOL
    35     | IF OP expr_a CP M block
    36     | IF OP expr_a CP M block ELSE M block
-   37     | FOR fexpr COMMA expr_a block
+   37     | FOR fexpr COMMA M expr_a M block
    38     | RETURN Rexpr SEMCOL
    39     | BREAK SEMCOL
    40     | CONTINUE SEMCOL
@@ -248,7 +248,7 @@ factor (79)
 literal (80)
     on left: 82 83 84 85, on right: 10 79
 M (81)
-    on left: 86, on right: 31 35 36 58 60
+    on left: 86, on right: 31 35 36 37 58 60
 
 
 State 0
@@ -865,7 +865,7 @@ State 68
 
 State 69
 
-   37 stmt: FOR . fexpr COMMA expr_a block
+   37 stmt: FOR . fexpr COMMA M expr_a M block
 
     ID  shift, and go to state 93
 
@@ -1149,7 +1149,7 @@ State 93
 
 State 94
 
-   37 stmt: FOR fexpr . COMMA expr_a block
+   37 stmt: FOR fexpr . COMMA M expr_a M block
 
     COMMA  shift, and go to state 126
 
@@ -1631,27 +1631,11 @@ State 125
 
 State 126
 
-   37 stmt: FOR fexpr COMMA . expr_a block
+   37 stmt: FOR fexpr COMMA . M expr_a M block
 
-    ID              shift, and go to state 70
-    bool_literal    shift, and go to state 27
-    char_literal    shift, and go to state 28
-    string_literal  shift, and go to state 29
-    int_literal     shift, and go to state 30
-    MINUS           shift, and go to state 75
-    NOT             shift, and go to state 76
-    OP              shift, and go to state 77
+    $default  reduce using rule 86 (M)
 
-    expr_a    go to state 153
-    location  go to state 82
-    expr_or   go to state 83
-    expr_and  go to state 84
-    expr_eq   go to state 85
-    expr_rel  go to state 86
-    expr_pm   go to state 87
-    expr_mdm  go to state 88
-    factor    go to state 89
-    literal   go to state 90
+    M  go to state 153
 
 
 State 127
@@ -1954,11 +1938,27 @@ State 152
 
 State 153
 
-   37 stmt: FOR fexpr COMMA expr_a . block
+   37 stmt: FOR fexpr COMMA M . expr_a M block
 
-    OB  shift, and go to state 50
+    ID              shift, and go to state 70
+    bool_literal    shift, and go to state 27
+    char_literal    shift, and go to state 28
+    string_literal  shift, and go to state 29
+    int_literal     shift, and go to state 30
+    MINUS           shift, and go to state 75
+    NOT             shift, and go to state 76
+    OP              shift, and go to state 77
 
-    block  go to state 164
+    expr_a    go to state 164
+    location  go to state 82
+    expr_or   go to state 83
+    expr_and  go to state 84
+    expr_eq   go to state 85
+    expr_rel  go to state 86
+    expr_pm   go to state 87
+    expr_mdm  go to state 88
+    factor    go to state 89
+    literal   go to state 90
 
 
 State 154
@@ -2066,9 +2066,11 @@ State 163
 
 State 164
 
-   37 stmt: FOR fexpr COMMA expr_a block .
+   37 stmt: FOR fexpr COMMA M expr_a . M block
 
-    $default  reduce using rule 37 (stmt)
+    $default  reduce using rule 86 (M)
+
+    M  go to state 168
 
 
 State 165
@@ -2079,7 +2081,7 @@ State 165
 
     $default  reduce using rule 56 (expr_rec2)
 
-    expr_rec2  go to state 168
+    expr_rec2  go to state 169
 
 
 State 166
@@ -2094,37 +2096,53 @@ State 167
    35 stmt: IF OP expr_a CP M block .
    36     | IF OP expr_a CP M block . ELSE M block
 
-    ELSE  shift, and go to state 169
+    ELSE  shift, and go to state 170
 
     $default  reduce using rule 35 (stmt)
 
 
 State 168
 
-   55 expr_rec2: COMMA expr_a expr_rec2 .
-
-    $default  reduce using rule 55 (expr_rec2)
-
-
-State 169
-
-   36 stmt: IF OP expr_a CP M block ELSE . M block
-
-    $default  reduce using rule 86 (M)
-
-    M  go to state 170
-
-
-State 170
-
-   36 stmt: IF OP expr_a CP M block ELSE M . block
+   37 stmt: FOR fexpr COMMA M expr_a M . block
 
     OB  shift, and go to state 50
 
     block  go to state 171
 
 
+State 169
+
+   55 expr_rec2: COMMA expr_a expr_rec2 .
+
+    $default  reduce using rule 55 (expr_rec2)
+
+
+State 170
+
+   36 stmt: IF OP expr_a CP M block ELSE . M block
+
+    $default  reduce using rule 86 (M)
+
+    M  go to state 172
+
+
 State 171
+
+   37 stmt: FOR fexpr COMMA M expr_a M block .
+
+    $default  reduce using rule 37 (stmt)
+
+
+State 172
+
+   36 stmt: IF OP expr_a CP M block ELSE M . block
+
+    OB  shift, and go to state 50
+
+    block  go to state 173
+
+
+State 173
 
    36 stmt: IF OP expr_a CP M block ELSE M block .
 

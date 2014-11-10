@@ -59,7 +59,7 @@ struct info {
 
 void yyerror (char const *s);
 
-int getOffset(enum dataType ty);
+struct symbol* getOffset(enum dataType ty);
 
 enum dataType resolveType(enum dataType ty);
 
@@ -103,6 +103,8 @@ void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3);
 
 void PrintQuad (struct quadtab* q);
 
+int isArray(struct symbol* s);
+
 void PrintList (struct backpatchList* l) ;
 
 void AddFunction();
@@ -138,7 +140,7 @@ program	: CLASS PROGRAM	OB feild_methods CB {	Init_PD2 (&$$, "program");
                                                 if(DEBUG_MODE){
                                                     PrintTree2($$);
                                                 }
-                                                    PrintQuads();
+                                                PrintQuads();
                                             }
     ;
 
@@ -284,7 +286,7 @@ block   :   OB { PushSymTab(); } var_decls stmts CB   {   Init_PD2(&$$, "block")
                                             $$->firstChild = $4;
                                         MergeBackpatch(&($$->nextlist), $3->nextlist);
                                         MergeBackpatch(&($$->nextlist), $4->nextlist);
-                                        if(DEBUG_MODE)
+                                        //if(DEBUG_MODE)
                                             PrintSymbols();
                                         PopSymTab();
                                     }
@@ -366,11 +368,15 @@ stmt	:	block    {   $$ = $1; }
                                     MergeBackpatch(&($$->nextlist), $6->nextlist);
                                     MergeBackpatch(&($$->nextlist), $9->nextlist);
                                 }
-    |   FOR fexpr COMMA expr_a block  {   Init_PD2(&$$, "for");
+    |   FOR fexpr COMMA M expr_a M block  {   Init_PD2(&$$, "for");
                                         $$->firstChild = $2;
-                                        $2->nextSibling = $4;
-                                        $4->nextSibling = $5;
+                                        $2->nextSibling = $5;
+                                        $5->nextSibling = $7;
                                         PrintTree($$);
+                                        Backpatch($5->truelist, $6->sym);
+                                        Backpatch($7->nextlist, $4->sym);
+                                        MergeBackpatch(&($$->nextlist), $5->falselist);
+                                        //MergeBackpatch(&($$->nextlist), $9->nextlist);
                                     }
     |   RETURN Rexpr SEMCOL   {   Init_PD2(&$$, "return");
                             $$->firstChild = $1;
@@ -408,21 +414,20 @@ expr_a    :   expr_or   {   $$ = $1;
     |   location ASS expr_or  {   Init_PD2(&$$, "assign_op");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = FindSymbol($1->lexeme);
+                            $$->sym = FindSymbol($1->sym->name);
                             GenQuad("=", $3->sym, NULL, $$->sym);
                         }
     |   location PASS expr_or {   Init_PD2(&$$, "plus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = FindSymbol($1->lexeme);
-                            GenQuad("+", $$->sym, $3->sym, $$->sym);
-                            //GenQuad("=", $3->sym, NULL, $$->sym);
+                            $$->sym = FindSymbol($1->sym->name);
+                            GenQuad("+", $3->sym, $$->sym, $$->sym);
                         }
     |   location MASS expr_or {   Init_PD2(&$$, "minus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = FindSymbol($1->lexeme);
-                            GenQuad("-", $$->sym, $3->sym, $$->sym);
+                            $$->sym = FindSymbol($1->sym->name);
+                            GenQuad("-", $3->sym, $$->sym, $$->sym);
                             //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
     |   ID OP expr_rec CP   {   Init_PD2(&$$, "method_call");
@@ -431,11 +436,19 @@ expr_a    :   expr_or   {   $$ = $1;
                             }
     ;
 
-location    :   ID  { $$ = $1;
+location    :   ID  {   $$ = $1;
+                        $$->sym = FindSymbol($1->lexeme);
     }
     |   ID OS expr_a CS {   Init_PD2(&$$, "array");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
+                            $$->sym = FindSymbol($1->lexeme);
+                            struct symbol* s = GenSym(integer);
+                            $$->sym->arraySize = s;
+                        //    $$->lexeme = $1->lexeme;
+                            GenQuad("*", getOffset($$->sym->type), $3->sym, s);
+                            //GenQuad("=", s, NULL, );
+
     }
     ;
 
@@ -450,7 +463,7 @@ expr_rec2   :   COMMA expr_a expr_rec2  {   Init_PD2(&$$, "args");
                                             $$->firstChild = $2;
                                             $2->nextSibling = $3;
     }
-    |       {   $$ = NULL;  }
+    |       {   Init_PD2(&$$, "");  }
     ;
 
 expr_or :   expr_and    {   $$ = $1;
@@ -573,8 +586,11 @@ factor  :	OP expr_a CP	{	$$ = $2;
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
                             $1->sym = FindSymbol($1->lexeme);
+                            //printf("%d\n", $1->sym->type);
                             $$->sym = GenSym(resolveType($1->sym->type));
-                            GenQuad("=", $1->sym, $3->sym, $$->sym);
+                            struct symbol* s = GenSym(integer);
+                            GenQuad("*", getOffset($1->sym->type), $3->sym, s);
+                            GenQuad("=",$1->sym, s, $$->sym);
 
                         }
     |	ID	{	Init_PD2(&$$, $1->PD2_type);
@@ -614,20 +630,6 @@ M   :       {
 #include "lex.yy.c"
 
 int quadid = 1;
-
-int getOffset(enum dataType ty){
-    if(intArray == ty)
-        return 4;
-    else
-        return 1;
-}
-
-enum dataType resolveType(enum dataType ty){
-    if(ty == intArray)
-        return integer;
-    else
-        return boolean;
-}
 
 int IncLabel(){
     quadid ++;
@@ -760,8 +762,12 @@ void PrintQuads(){
 
 void PrintQuad(struct quadtab* q) {
     if (strcmp(q->opcode, "=") == 0){
-        if(q->src1->type == array)
+        if(isArray(q->src1)){
             printf("L%d: %s = %s[%s]\n", q->idx, q->dst->name, q->src1->name, q->src2->name);
+        }
+        else if(isArray(q->dst)){
+            printf("L%d: %s[%s] = %s\n", q->idx, q->dst->name, q->dst->arraySize->name, q->src1->name);
+        }
         else
             printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
     }
@@ -790,6 +796,12 @@ void PrintQuad(struct quadtab* q) {
 
 }//PrintQuad
 
+int isArray(struct symbol* s){
+    if(s->type == intArray || s->type == boolArray)
+        return 1;
+    return 0;
+}
+
 void PushSymTab() { //push new symbol table to symbol table stack
     struct symtab* s = (struct symtab*) malloc(sizeof( struct symtab));
 
@@ -804,7 +816,7 @@ void PopSymTab() {//pop from symbol table stack
 struct symbol* AddSym (char* name, enum dataType ty){
     struct symbol* s = FindSymbolBlock(name);
     if(s != NULL) {
-        if(strcmp(name, "") == 0 || (name[0] >= '1' && name[0] <= '9'))
+        if(strcmp(name, "") == 0 || (name[0] >= '1' && name[0] <= '9') || name[0] == 'L')
             return s;
         printf("Syntax Error Redeclaration of variable/function %s\n", name);
         if(!DEBUG_MODE)
@@ -817,6 +829,7 @@ struct symbol* AddSym (char* name, enum dataType ty){
     symStack->symbols = var;
     return var;
 }//AddSym
+
 
 struct symbol* GenSym(enum dataType ty){
     static int tempid = 0;
@@ -867,6 +880,26 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty){
 
 void AddFunction(){
     GenQuad("function", NULL, NULL, NULL);
+}
+
+struct symbol* getOffset(enum dataType ty){
+    static int x = 1;
+    if(x){
+        AddSym("1", integer);
+        AddSym("4", integer);
+        x = 0;
+    }
+    if(intArray == ty)
+        return FindSymbol("4");
+    else
+        return FindSymbol("1");
+}
+
+enum dataType resolveType(enum dataType ty){
+    if(ty == intArray)
+        return integer;
+    else
+        return boolean;
 }
 
 void BackpatchFunction(struct symbol* s){
