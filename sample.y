@@ -107,6 +107,8 @@ void PrintList (struct backpatchList* l) ;
 
 void AddFunction();
 
+void BackpatchFunction(struct symbol* s);
+
 struct info* Init_PD2(struct info** x, char* y);
 void PrintTree (struct info* x);
 void Print (struct info* x, int l);
@@ -133,8 +135,10 @@ void PrintTree2 (struct info* x);
 
 program	: CLASS PROGRAM	OB feild_methods CB {	Init_PD2 (&$$, "program");
                                                 $$->firstChild = $4;
-                                                PrintTree2($$);
-                                                PrintQuads();
+                                                if(DEBUG_MODE){
+                                                    PrintTree2($$);
+                                                }
+                                                    PrintQuads();
                                             }
     ;
 
@@ -149,31 +153,32 @@ feild_methods    :   feild_methods feild_method {   Init_PD2(&$$, "feild_methods
     |       {   Init_PD2(&$$, "");  }
     ;
 
-feild_method    :   type { AddFunction(); } ID OP args CP block {   Init_PD2(&$$, "method_decl");
-                                $$->firstChild = $3;
-                                if($5) {
-                                    $3->nextSibling = $5;
-                                    $5->nextSibling = $7;
+feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$, "method_decl");
+                                $$->firstChild = $2;
+                                if($4) {
+                                    $2->nextSibling = $4;
+                                    $4->nextSibling = $7;
                                 }
                                 else
                                     $3->nextSibling = $7;
 
+                                BackpatchFunction(AddSym($2->lexeme, function));
                                 MergeBackpatch(&($$->nextlist), $7->nextlist);
                                 struct symbol* s = InstallLabel();
                                 GenQuad("halt", NULL, NULL, NULL);
                                 Backpatch($$->nextlist, s);
                             }
-    |   VOID ID OP args CP block    {   Init_PD2(&$$, "method_decl");
+    |   VOID ID OP args CP { AddFunction(); } block    {   Init_PD2(&$$, "method_decl");
                                         $$->firstChild = $2;
                                         if($4) {
                                             $2->nextSibling = $4;
-                                            $4->nextSibling = $6;
+                                            $4->nextSibling = $7;
                                         }
                                         else
-                                            $2->nextSibling = $6;
+                                            $2->nextSibling = $7;
 
-                                        AddSym($2->lexeme, function);
-                                        MergeBackpatch(&($$->nextlist), $6->nextlist);
+                                        BackpatchFunction(AddSym($2->lexeme, function));
+                                        MergeBackpatch(&($$->nextlist), $7->nextlist);
                                         struct symbol* s = InstallLabel();
                                         GenQuad("halt", NULL, NULL, NULL);
                                         Backpatch($$->nextlist, s);
@@ -775,7 +780,7 @@ void PrintQuad(struct quadtab* q) {
         printf("L%d: halt\n", q->idx);
 
     else if(strcmp(q->opcode, "function") == 0)
-        printf("%s %s:\n", q->opcode, q->dst->name);
+        printf("\n%s %s:\n", q->opcode, q->dst->name);
 
     else if (q->src2 == NULL)
         printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
@@ -862,6 +867,17 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty){
 
 void AddFunction(){
     GenQuad("function", NULL, NULL, NULL);
+}
+
+void BackpatchFunction(struct symbol* s){
+    struct quadtab* q = quads;
+    while(q != NULL){
+        if(q->dst == NULL && strcmp(q->opcode, "function") == 0){
+            q->dst = s;
+            return;
+        }
+        q = q->next;
+    }
 }
 
 void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3){
