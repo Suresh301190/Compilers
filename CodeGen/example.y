@@ -121,6 +121,7 @@ program	:	block	{
 block	:	'{' { PushSymTab(); } stmts '}'	{
 							Init(&$$);
 							MergeBackpatch(&($$->nextlist), $3->nextlist);
+							PrintSymbols();
 							PopSymTab();
 						}
 	;

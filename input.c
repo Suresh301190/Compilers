@@ -1,15 +1,10 @@
 class Program{
 
+	int a[5];
+
 	int main(){
 		int x, y, z;
-		y = x + 6 % 25;
-		x += a[5] * 6;
-
-		if( x < y){
-			z = 2;
-		}
-		else {
-			z = 5;
-		}
+		x = z + 5;
+		a[1] = 5;
 	}
 }

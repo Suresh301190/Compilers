@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-enum dataType { integer, invalid, boolean, character, string, array};
+enum dataType { integer, invalid, boolean, character, string, array, function, search, intArray, boolArray};
 //invalid - symbols that do not have a type
 
 struct symbol {
     char name[256];
     enum dataType type;
+    struct symbol* arraySize;
     struct symbol* next;
 };
 
@@ -34,8 +35,9 @@ struct quadtab* quadTail = NULL;
 
 struct backpatchList
 {
-        struct quadtab* quad;
-        struct backpatchList* next;
+    struct quadtab* quad;
+    struct symbol* sym;
+    struct backpatchList* next;
 };
 
 struct info {
@@ -48,6 +50,7 @@ struct info {
         struct backpatchList* truelist;
         struct backpatchList* falselist;
         struct backpatchList* nextlist;
+        struct backpatchList* typelist;
 };
 
 #define YYSTYPE struct info*
@@ -66,6 +69,8 @@ void MergeBackpatch(struct backpatchList** x, struct backpatchList* y);
 
 void InsertTarget(struct backpatchList** x, struct quadtab* y);
 
+void InsertTargetSym(struct backpatchList** x, struct symbol* s);
+
 void PrintQuads();
 
 void PushSymTab();
@@ -74,7 +79,7 @@ void PopSymTab();
 
 struct symbol* AddSym (char* name, enum dataType ty);
 
-void UpdateType(enum dataType ty);
+void UpdateType(struct backpatchList* x, enum dataType ty);
 
 struct symbol* GenSym(enum dataType ty);
 
@@ -84,7 +89,9 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty);
 
 void PrintSymbols();
 
-struct symbol* FindSymbol(char* lexeme, enum dataType ty);
+struct symbol* FindSymbol(char* lexeme);
+
+struct symbol* FindSymbolBlock(char* lexeme);
 
 void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3);
 
@@ -142,6 +149,7 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                 }
                                 else
                                     $2->nextSibling = $6;
+
                                 MergeBackpatch(&($$->nextlist), $6->nextlist);
                                 struct symbol* s = InstallLabel();
                                 GenQuad("halt", NULL, NULL, NULL);
@@ -155,12 +163,14 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                         }
                                         else
                                             $2->nextSibling = $6;
+
+                                        AddSym($2->lexeme, function);
                                         MergeBackpatch(&($$->nextlist), $6->nextlist);
                                         struct symbol* s = InstallLabel();
                                         GenQuad("halt", NULL, NULL, NULL);
                                         Backpatch($$->nextlist, s);
                                     }
-    |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init_PD2(&$$, "feild_decl");
+    |   type ID OS int_literal CS ARR_IDS SEMCOL {   Init_PD2(&$$, "array");
                                             $$->firstChild = $1;
                                             $1->nextSibling = $2;
                                             $2->nextSibling = $4;
@@ -170,19 +180,25 @@ feild_method    :   type ID OP args CP block {   Init_PD2(&$$, "method_decl");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $2;
                                     $2->nextSibling = $3;
+                                    UpdateType($$->nextlist, $1->type);
                                 }
     |   type ID ASS literal SEMCOL  {   Init_PD2(&$$, "feild_decl");
                                         $$->firstChild = $1;
                                         $1->nextSibling = $2;
                                         $2->nextSibling = $4;
                                         //strcpy($3->PD2_type, "assign_op");
+                                        $$->sym = AddSym($2->lexeme, $1->type);
+                                        $$->type = $1->type;
+                                        GenQuad("=", $4->sym, NULL, $$->sym);
                                     }
     ;
 
 type    :   INT {   Init_PD2(&$$, "int");
+                    $$->type = integer;
                     //$$->firstChild = $1;
                 }
     |   BOOL    {   Init_PD2(&$$, "bool");
+                    $$->type = boolean;
                     //$$->firstChild = $1;
                 }
     ;
@@ -190,17 +206,24 @@ type    :   INT {   Init_PD2(&$$, "int");
 ARR_IDS :   COMMA ARR_ID ARR_IDS    {   Init_PD2(&$$, "feild");
                                         $$->firstChild = $2;
                                         $2->nextSibling = $3;
+                                        MergeBackpatch(&($$->nextlist), $2->nextlist);
+                                        MergeBackpatch(&($$->nextlist), $3->nextlist);
                                     }
     |       {   $$ = NULL;
             }
     ;
 
 ARR_ID  :   ID  {   $$ = $1;
+                    $$->sym = AddSym($1->lexeme, invalid);
+                    InsertTargetSym(&($$->typelist), $$->sym);
                 }
     |   ID OS int_literal CS    {   Init_PD2(&$$, "array");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $3;
                                     PrintTree($$);
+                                    $$->sym = AddSym($1->lexeme, array);
+                                    $$->sym->arraySize = $3->sym;
+                                    InsertTargetSym(&($$->typelist), $$->sym);
                                 }
     ;
 
@@ -222,21 +245,27 @@ args1   :   COMMA arg args1 {   Init_PD2(&$$, "args");
 
 arg :   BOOL ID {   Init_PD2(&$$, "bool");
                     $$->firstChild = $2;
+                    $$->sym = AddSym($2->lexeme, boolean);
+                    $$->type = boolean;
                 }
     |   INT ID  {   Init_PD2(&$$, "int");
                     $$->firstChild = $2;
+                    $$->sym = AddSym($2->lexeme, integer);
+                    $$->type = integer;
                 }
     ;
 
-block   :   OB var_decls stmts CB   {   Init_PD2(&$$, "block");
-                                        if($2){
-                                            $$->firstChild = $2;
-                                            $2->nextSibling = $3;
+block   :   OB { PushSymTab(); } var_decls stmts CB   {   Init_PD2(&$$, "block");
+                                        if($3){
+                                            $$->firstChild = $3;
+                                            $3->nextSibling = $4;
                                         }
                                         else
-                                            $$->firstChild = $3;
-                                        MergeBackpatch(&($$->nextlist), $2->nextlist);
+                                            $$->firstChild = $4;
                                         MergeBackpatch(&($$->nextlist), $3->nextlist);
+                                        MergeBackpatch(&($$->nextlist), $4->nextlist);
+                                        //PrintSymbols();
+                                        PopSymTab();
                                     }
     ;
 
@@ -255,18 +284,23 @@ var_decls   :   var_decls var_decl  {   Init_PD2(&$$, "var_decls");
 var_decl    :   arg vars SEMCOL {   Init_PD2(&$$, "var_decl");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $2;
+                                    UpdateType($2->typelist, $1->sym->type);
                                 }
     ;
 
 vars    :   COMMA var vars  {   Init_PD2(&$$, "var");
                                 $$->firstChild = $2;
                                 $2->nextSibling = $3;
+                                MergeBackpatch(&($$->typelist), $2->typelist);
+                                MergeBackpatch(&($$->typelist), $3->typelist);
                             }
-    |       {   $$ = NULL;
+    |       {   Init_PD2(&$$, "");
             }
     ;
 
 var :   ID  {   $$ = $1;
+                $1->sym = AddSym($1->lexeme, invalid);
+                InsertTargetSym(&($$->typelist), $1->sym);
             }
     ;
 
@@ -350,23 +384,23 @@ fexpr   :   ID ASS expr_a { Init_PD2(&$$, "assign");
 
 expr_a    :   expr_or   {   $$ = $1;
                         }
-    |   ID ASS expr_or  {   Init_PD2(&$$, "assign_op");
+    |   location ASS expr_or  {   Init_PD2(&$$, "assign_op");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = getFindSym($1->lexeme, $1->type);
+                            $$->sym = FindSymbol($1->lexeme);
                             GenQuad("=", $3->sym, NULL, $$->sym);
                         }
-    |   ID PASS expr_or {   Init_PD2(&$$, "plus_eq");
+    |   location PASS expr_or {   Init_PD2(&$$, "plus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = getFindSym($1->lexeme, $1->type);
+                            $$->sym = FindSymbol($1->lexeme);
                             GenQuad("+", $$->sym, $3->sym, $$->sym);
                             //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
-    |   ID MASS expr_or {   Init_PD2(&$$, "minus_eq");
+    |   location MASS expr_or {   Init_PD2(&$$, "minus_eq");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $$->sym = getFindSym($1->lexeme, $1->type);
+                            $$->sym = FindSymbol($1->lexeme);
                             GenQuad("-", $$->sym, $3->sym, $$->sym);
                             //GenQuad("=", $3->sym, NULL, $$->sym);
                         }
@@ -374,6 +408,14 @@ expr_a    :   expr_or   {   $$ = $1;
                                 $$->firstChild = $1;
                                 $1->nextSibling = $3;
                             }
+    ;
+
+location    :   ID  { $$ = $1;
+    }
+    |   ID OS expr_a CS {   Init_PD2(&$$, "array");
+                            $$->firstChild = $1;
+                            $1->nextSibling = $3;
+    }
     ;
 
 expr_rec    :   expr_a  expr_rec2   {   Init_PD2(&$$, "args");
@@ -499,30 +541,30 @@ factor  :	OP expr_a CP	{	$$ = $2;
     |   ID OS expr_a CS {   Init_PD2(&$$, "array");
                             $$->firstChild = $1;
                             $1->nextSibling = $3;
-                            $1->sym = getFindSym($1->lexeme, array);
-                            $$->sym = GenSym(integer);
+                            $1->sym = FindSymbol($1->lexeme);
+                            $$->sym = GenSym($1->sym->type);
                             GenQuad("=", $1->sym, $3->sym, $$->sym);
 
                         }
     |	ID	{	Init_PD2(&$$, $1->PD2_type);
-                $$->sym = getFindSym($1->lexeme, integer);
+                $$->sym = FindSymbol($1->lexeme);
                 //$$->firstChild = $1;
             }
     ;
 
 literal :   int_literal	{	Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = getFindSym($1->lexeme, integer);
+                            $$->sym = AddSym($1->lexeme, integer);
                         }
     |   string_literal  {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = getFindSym($1->lexeme, string);
+                            $$->sym = AddSym($1->lexeme, string);
                             //$$->firstChild = $1;
                         }
     |   char_literal    {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = getFindSym($1->lexeme, character);
+                            $$->sym = AddSym($1->lexeme, character);
                             //$$->firstChild = $1;
                         }
     |   bool_literal    {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = getFindSym($1->lexeme, boolean);
+                            $$->sym = AddSym($1->lexeme, boolean);
                             //$$->firstChild = $1;
                         }
     ;
@@ -536,7 +578,7 @@ M   :       {
 
 #include "lex.yy.c"
 
-//extern yydebug = 1;
+int DEBUG_MODE = 1;
 
 int quadid = 1;
 
@@ -586,21 +628,70 @@ void InsertTarget(struct backpatchList** x, struct quadtab* y){
     struct backpatchList* z = (struct backpatchList*) malloc(sizeof(struct backpatchList));
     z->quad = y;
     z->next = *x;
-
     *x = z;
     //PrintList (*x);
 }//InsertTarget
 
-struct symbol* FindSymbol(char* lexeme, enum dataType ty){
+void InsertTargetSym(struct backpatchList** x, struct symbol* s){
+    if (*x == NULL){
+        *x = (struct backpatchList*) malloc(sizeof(struct backpatchList));
+        (*x)->quad = (struct quadtab* ) malloc(sizeof (struct quadtab));
+        (*x)->sym = s;
+        (*x)->next = NULL;
+        //PrintList (*x);
+        return;
+    }
+    else {
+        struct backpatchList* z = (struct backpatchList*) malloc(sizeof(struct backpatchList));
+        z->sym = s;
+        z->next = *x;
+        *x = z;
+    }
+    //PrintList (*x);
+}//InsertTarget
+
+void UpdateType(struct backpatchList* x, enum dataType ty){
+    if(x == NULL) return;
+    struct backpatchList* toPatch = x;
+    while(toPatch != NULL){
+        struct symbol* s = toPatch->sym;
+        printf("%s %d->%d \n", s->name, s->type, ty);
+        if(s->type == array){
+            if(ty == integer)
+                s->type = intArray;
+            else
+                s->type = boolArray;
+        }
+        else
+            s->type = ty;
+        toPatch = toPatch->next;
+    }
+}
+
+struct symbol* FindSymbol(char* lexeme){
     struct symtab* s = symStack;
     while (s != NULL) {
         struct symbol* sym = s->symbols;
         while (sym != NULL){
-            if (strcmp(lexeme, sym->name) == 0 && ty == sym->type)
+            if (strcmp(lexeme, sym->name) == 0)
                 return sym;
             sym = sym->next;
         }
         s = s->next;
+    }
+    printf("undefined variable/function %s\n", lexeme);
+    if(!DEBUG_MODE){
+        exit(0);
+    }
+    return NULL;
+}
+
+struct symbol* FindSymbolBlock(char* lexeme){
+    struct symbol* sym = symStack->symbols;
+    while (sym != NULL) {
+        if (strcmp(lexeme, sym->name) == 0)
+            return sym;
+        sym = sym->next;
     }
     return NULL;
 }
@@ -622,19 +713,21 @@ void PrintQuad(struct quadtab* q) {
             printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
     }
     else if (strcmp(q->opcode, "if") == 0){
-        //if(q->dst->name)
+        if(q->dst->name)
             printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-        //else
-        //    printf("L%d: if %s goto L%d\n", q->idx, q->src1->name, q->idx + 1);
     }
-    else if (strcmp(q->opcode, "ifFalse") == 0)
-        printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
-
+    else if (strcmp(q->opcode, "ifFalse") == 0){
+        if(q->dst->name)
+            printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
+    }
     else if (strcmp(q->opcode, "goto") == 0)
         printf("L%d: goto %s\n", q->idx, q->dst->name);
 
     else if (strcmp(q->opcode, "halt") == 0)
         printf("L%d: halt\n", q->idx);
+
+    else if(strcmp(q->opcode, "function") == 0)
+        printf("%s %s starts\n", q->opcode, q->dst->name);
 
     else if (q->src2 == NULL)
         printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
@@ -656,6 +749,17 @@ void PopSymTab() {//pop from symbol table stack
 }//PopSymTab
 
 struct symbol* AddSym (char* name, enum dataType ty){
+    if(name[0] >= '1' && name[0] <= '9'){
+        struct symbol* sym = FindSymbol(name);
+        if(sym != NULL)
+            return sym;
+
+    }
+    else if(FindSymbolBlock(name) != NULL) {
+        printf("Syntax Error Redeclaration of variable/function %s\n", name);
+        if(!DEBUG_MODE)
+            exit(0);
+    }
     struct symbol* var = (struct symbol*) malloc(sizeof( struct symbol));
     strcpy(var->name, name);
     var->type = ty;
@@ -698,9 +802,13 @@ struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, 
 }//GenQuad
 
 struct symbol* getFindSym(char* lexeme, enum dataType ty){
-    struct symbol* s = FindSymbol (lexeme, ty);
+    if(lexeme[0] < '0' || lexeme[0] > '9')
+        printf("%s %d\n", lexeme, ty);
+    struct symbol* s = FindSymbol (lexeme);
     if (!s) {
-            s = AddSym(lexeme, ty);
+        s = AddSym(lexeme, ty);
+        if(lexeme[0] < '0' || lexeme[0] > '9')
+            printf("undefined variable/function %s\n", lexeme);
     }
     return s;
 }
@@ -725,6 +833,18 @@ void PrintSymbols(){
                 printf("%s integer\n", sym->name);
             if (sym->type == invalid)
                 printf("%s invalid\n", sym->name);
+            if (sym->type == boolean)
+                printf("%s boolean\n", sym->name);
+            if (sym->type == intArray)
+                printf("%s intArray\n", sym->name);
+            if (sym->type == boolArray)
+                printf("%s boolArray\n", sym->name);
+            if (sym->type == string)
+                printf("%s string\n", sym->name);
+            if (sym->type == function)
+                printf("%s function\n", sym->name);
+            if (sym->type == character)
+                printf("%s character\n", sym->name);
             sym = sym->next;
         }
         s = s->next;
