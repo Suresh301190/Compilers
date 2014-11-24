@@ -11,7 +11,8 @@ char* GetVal(struct symbol* s) {
 	}
 	else if (s->sType == vartmp) {
 		sprintf(v, "-%d(%%rbp)", s->offset);
-	}  else if (s->sType == str_const) {
+	}
+	else if (s->sType == str_const) {
                 //add to a list of strings to be emitted later
                 strId ++;
                 char str[256];
@@ -129,12 +130,8 @@ void EmitIfFalse (struct quadtab* q) {
 	int counter = 0;
 	printf("L%d_%d: movq %s, %%rax\n", q->idx, ++counter, GetVal(q->src1));
 
-
 	printf("L%d_%d: cmp $0, %%rax\n", q->idx, ++counter);
 	printf("L%d_%d: je %s\n", q->idx, ++counter, GetVal(q->dst));
-
-
-
 
 }//EmitIfFalse
 
@@ -145,29 +142,24 @@ void EmitGoto (struct quadtab* q) {
 
 
 void HandleParams (struct quadtab** q) {
-        int counter = 0;
-        struct quadtab* qt = *q;
+    int counter = 0;
+    struct quadtab* qt = *q;
 
-        int np = 0;
-        while (strcmp(qt->opcode, "param") == 0) {
+    int np = 0;
+    while (strcmp(qt->opcode, "param") == 0) {
 
-                if (np > 5) assert (0);
-                printf("L%d_%d: movq %s, %s\n", qt->idx, ++counter, GetVal(qt->dst), paramRegs[np]);
-                np ++;
-                *q = qt;
-                qt = qt->next;
+        if (np > 5) assert (0);
+        printf("L%d_%d: movq %s, %s\n", qt->idx, ++counter, GetVal(qt->dst), paramRegs[np]);
+        np ++;
+        *q = qt;
+        qt = qt->next;
 
-		if (strcmp(qt->opcode, "param") == 0) {
-	                printf("\n#");
-        	        PrintQuad(qt);
-                	printf("\n");
-
+		if (strcmp(qt->opcode, "param") == 0 && DEBUG_MODE) {
+	       	printf("\n#");
+    		PrintQuad(qt);
+        	printf("\n");
 		}
-        }
-
-
-
-
+    }
 }//Handle Params
 
 void EmitCall(struct quadtab* q) {
@@ -191,12 +183,14 @@ void EmitX86Code () {
 
 	while (q != NULL)
 	{
-		printf("\n#");
-		if(!PrintQuad(q)){
-			q = q->next;
-			continue;
+		if(DEBUG_MODE){
+			printf("\n#");
+			if(!PrintQuad(q)){
+				q = q->next;
+				continue;
+			}
+			printf("\n");
 		}
-		printf("\n");
 		if (strcmp(q->opcode, "=") == 0) { EmitAssign(q); }
 		else if (strcmp(q->opcode, "+") == 0) { EmitAdd(q); }
 		else if (strcmp(q->opcode, "-") == 0) { EmitSub(q); }

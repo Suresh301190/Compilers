@@ -5,7 +5,7 @@
  * MT13017
  * 24 November 2014
  *
- * 
+ *
  * Usage: (1.a) $ yacc -d sample.y
  *        (1.b) $ flex sample.lex
  *        (1.c) $ yacc -v sample.y
@@ -38,8 +38,8 @@ extern struct info* yylval;
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
 #define INIT(op)  { PRINT Init_PD2(&yylval, yytext); strcpy(yylval->lexeme, yytext);  return op; }
-#define PRINT     printf("%d. %s\n", counter++, yytext);
-//#define PRINT
+//#define PRINT     printf("%d. %s\n", counter++, yytext);
+#define PRINT
 
 int counter = 1;
 

@@ -131,6 +131,8 @@ void PrintList (struct backpatchList* l) ;
 
 void AddFunction();
 
+void IncrementOffset(struct symbol* s);
+
 void BackpatchFunction(struct symbol* s);
 
 void EmitX86Code();
@@ -164,7 +166,7 @@ program	: CLASS PROGRAM	OB feild_methods CB {	Init_PD2 (&$$, "program");
                                                 if(DEBUG_MODE){
                                                     PrintTree2($$);
                                                 }
-                                                //PrintQuads();
+                                                PrintQuads();
                                                 EmitX86Code();
                                             }
     ;
@@ -216,7 +218,8 @@ feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$
                                             $2->nextSibling = $4;
                                             $4->nextSibling = $6;
                                             $2->sym = AddSym($2->lexeme, $1->type == integer?intArray:boolArray, vartmp);
-                                            $2->sym->arraySize = $4->sym;
+                                            $2->sym->arraySize = FindSymbol($4->lexeme);
+                                            IncrementOffset($2->sym->arraySize);
                                             MergeBackpatch(&($$->typelist), $6->typelist);
                                             UpdateType($$->typelist, $1->type);
 
@@ -269,7 +272,8 @@ ARR_ID  :   ID  {   $$ = $1;
                                     $1->nextSibling = $3;
                                     PrintTree($$);
                                     $$->sym = AddSym($1->lexeme, array, vartmp);
-                                    $$->sym->arraySize = $3->sym;
+                                    $$->sym->arraySize = FindSymbol($3->lexeme);
+                                    IncrementOffset($$->sym->arraySize);
                                     InsertTargetSym(&($$->typelist), $$->sym);
                                 }
     ;
@@ -640,7 +644,7 @@ literal :   int_literal	{	Init_PD2(&$$, $1->PD2_type);
                             $$->sym = AddSym($1->lexeme, integer, int_const);
                         }
     |   string_literal  {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = AddSym($1->lexeme, string, str_const);
+                            $$->sym = FindSymbol($1->lexeme);
                             //$$->firstChild = $1;
                         }
     |   char_literal    {   Init_PD2(&$$, $1->PD2_type);
@@ -688,6 +692,21 @@ int GetOffset (int x) {
   return x;
 
 }//GetOFfset
+
+void IncrementOffset(struct symbol* s){
+    int val = parseInt(s->name);
+    while(--val > 0)
+        offset = GetOffset(offset);
+}
+
+int parseInt(const char* c){
+    int val = 0, i = 0;
+    while(c[i] != '\0'){
+        val = val*10 + (c[i] - '0');
+        i++;
+    }
+    return val;
+}
 
 struct symbol* InstallLabel(){
     char label[256];
@@ -800,6 +819,7 @@ struct symbol* FindSymbol(char* lexeme){
     if(lexeme[0] >= '0' && lexeme[0] <= '9'){
         return AddSym(lexeme, integer, int_const);
     }
+
     struct symtab* s = symStack;
     while (s != NULL) {
         struct symbol* sym = s->symbols;
@@ -809,6 +829,10 @@ struct symbol* FindSymbol(char* lexeme){
             sym = sym->next;
         }
         s = s->next;
+    }
+
+    if(lexeme[0] == '"'){
+        return AddSym(lexeme, string, str_const);
     }
 
     printf("FS undefined variable/function %s\n", lexeme);
@@ -846,6 +870,7 @@ struct symbol* FindSymbolBlock(char* lexeme){
 void PrintQuads(){
     struct quadtab* q = quads;
     while (q != NULL){
+        printf("#");
         PrintQuad(q);
         q = q->next;
     }
@@ -886,7 +911,7 @@ int PrintQuad(struct quadtab* q) {
         printf("L%d: halt\n", q->idx);
 
     else if(strcmp(q->opcode, "function") == 0)
-        printf("\n%s %s:\n", q->opcode, q->dst->name);
+        printf("%s %s:\n", q->opcode, q->dst->name);
 
     else if (q->src2 == NULL)
         printf("L%d: %s = %s %s\n", q->idx, q->dst->name, q->opcode, q->src1->name);
@@ -917,7 +942,7 @@ void PopSymTab() {//pop from symbol table stack
 struct symbol* AddSym (char* name, enum dataType ty, enum symType sy){
     struct symbol* s = FindSymbolBlock(name);
     if(s != NULL) {
-        if(strcmp(name, "") == 0 || (name[0] >= '1' && name[0] <= '9') || name[0] == 'L')
+        if(strcmp(name, "") == 0 || (name[0] >= '0' && name[0] <= '9') || name[0] == 'L')
             return s;
         printf("Syntax Error Redeclaration of variable/function %s\n", name);
         if(!DEBUG_MODE)
