@@ -1,13 +1,11 @@
 /*
- * Project Deliverable 3: Compilers
+ * Project Deliverable 4: Compilers
  * @author
  * Suresh Rangaswamy
  * MT13017
- * 10 November 2014
+ * 24 November 2014
  *
- * Added some of my own operators as well like unary_op to match (++|--),
- * const keyword, and C Pointers as well, like const char *c.
- *
+ * 
  * Usage: (1.a) $ yacc -d sample.y
  *        (1.b) $ flex sample.lex
  *        (1.c) $ yacc -v sample.y
@@ -40,8 +38,8 @@ extern struct info* yylval;
 #define TOKEN(op) { PRINT return yytext[0]; }
 #define RET(op)   { PRINT return op; }
 #define INIT(op)  { PRINT Init_PD2(&yylval, yytext); strcpy(yylval->lexeme, yytext);  return op; }
-//#define PRINT     printf("%d. %s\n", counter++, yytext);
-#define PRINT
+#define PRINT     printf("%d. %s\n", counter++, yytext);
+//#define PRINT
 
 int counter = 1;
 
@@ -75,7 +73,7 @@ bool_literal			(true|false)
 char_literal			\'.\'
 
 /* how a string is represented */
-string_literal			\".*\"
+string_literal			\"(\\.|[^\\"])*\"
 
 /* variable names, function names, Pointers */
 id				\*?_*{alpha}[a-zA-Z0-9_]*

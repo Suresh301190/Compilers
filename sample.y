@@ -2,17 +2,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 
-int DEBUG_MODE = 1;
+int DEBUG_MODE = 0;
 
-enum dataType { integer, invalid, boolean, character, string, array, function, search, intArray, boolArray};
+enum dataType { integer, invalid, boolean, character, string, array, function, search, intArray, boolArray, voidtype};
 //invalid - symbols that do not have a type
+
+enum symType { vartmp, int_const, str_const, labelvar, fvar, bool_constant, char_constant };
+//vartmp - variable or temporary
+//fvar - function name
 
 struct symbol {
     char name[256];
     enum dataType type;
     struct symbol* arraySize;
     struct symbol* next;
+    enum symType sType;
+    int offset; //wrt rbp in x86 assembly
 };
 
 struct symtab {
@@ -42,6 +49,12 @@ struct backpatchList
     struct backpatchList* next;
 };
 
+struct argList
+{
+  struct symbol* arg;
+  struct argList* next;
+};
+
 struct info {
         char PD2_type[100];
         struct info* firstChild;
@@ -53,6 +66,7 @@ struct info {
         struct backpatchList* falselist;
         struct backpatchList* nextlist;
         struct backpatchList* typelist;
+        struct argList* args;
 };
 
 #define YYSTYPE struct info*
@@ -75,7 +89,13 @@ void MergeBackpatch(struct backpatchList** x, struct backpatchList* y);
 
 void InsertTarget(struct backpatchList** x, struct quadtab* y);
 
+void InsertArg(struct argList** x, struct symbol* y);
+
+void MergeArgList(struct argList** x, struct argList* y);
+
 void InsertTargetSym(struct backpatchList** x, struct symbol* s);
+
+struct symbol* GenParams(struct argList* x);
 
 void PrintQuads();
 
@@ -83,7 +103,7 @@ void PushSymTab();
 
 void PopSymTab();
 
-struct symbol* AddSym (char* name, enum dataType ty);
+struct symbol* AddSym (char* name, enum dataType ty, enum symType sy);
 
 void UpdateType(struct backpatchList* x, enum dataType ty);
 
@@ -99,9 +119,11 @@ struct symbol* FindSymbol(char* lexeme);
 
 struct symbol* FindSymbolBlock(char* lexeme);
 
+struct symbol* FindFunction(char* lexeme);
+
 void rel_operation(char *op, struct info* SS, struct info* S1, struct info* S3);
 
-void PrintQuad (struct quadtab* q);
+int PrintQuad (struct quadtab* q);
 
 int isArray(struct symbol* s);
 
@@ -110,6 +132,8 @@ void PrintList (struct backpatchList* l) ;
 void AddFunction();
 
 void BackpatchFunction(struct symbol* s);
+
+void EmitX86Code();
 
 struct info* Init_PD2(struct info** x, char* y);
 void PrintTree (struct info* x);
@@ -140,7 +164,8 @@ program	: CLASS PROGRAM	OB feild_methods CB {	Init_PD2 (&$$, "program");
                                                 if(DEBUG_MODE){
                                                     PrintTree2($$);
                                                 }
-                                                PrintQuads();
+                                                //PrintQuads();
+                                                EmitX86Code();
                                             }
     ;
 
@@ -164,7 +189,7 @@ feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$
                                 else
                                     $3->nextSibling = $7;
 
-                                BackpatchFunction(AddSym($2->lexeme, function));
+                                BackpatchFunction(AddSym($2->lexeme, function, fvar));
                                 MergeBackpatch(&($$->nextlist), $7->nextlist);
                                 struct symbol* s = InstallLabel();
                                 GenQuad("halt", NULL, NULL, NULL);
@@ -179,7 +204,7 @@ feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$
                                         else
                                             $2->nextSibling = $7;
 
-                                        BackpatchFunction(AddSym($2->lexeme, function));
+                                        BackpatchFunction(AddSym($2->lexeme, function, fvar));
                                         MergeBackpatch(&($$->nextlist), $7->nextlist);
                                         struct symbol* s = InstallLabel();
                                         GenQuad("halt", NULL, NULL, NULL);
@@ -190,7 +215,7 @@ feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$
                                             $1->nextSibling = $2;
                                             $2->nextSibling = $4;
                                             $4->nextSibling = $6;
-                                            $2->sym = AddSym($2->lexeme, $1->type == integer?intArray:boolArray);
+                                            $2->sym = AddSym($2->lexeme, $1->type == integer?intArray:boolArray, vartmp);
                                             $2->sym->arraySize = $4->sym;
                                             MergeBackpatch(&($$->typelist), $6->typelist);
                                             UpdateType($$->typelist, $1->type);
@@ -200,7 +225,7 @@ feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$
                                     $$->firstChild = $1;
                                     $1->nextSibling = $2;
                                     $2->nextSibling = $3;
-                                    AddSym($2->lexeme, $1->type);
+                                    AddSym($2->lexeme, $1->type, vartmp);
                                     MergeBackpatch(&($$->typelist), $3->typelist);
                                     UpdateType($$->typelist, $1->type);
                                 }
@@ -209,7 +234,7 @@ feild_method    :   type ID OP args CP { AddFunction(); } block {   Init_PD2(&$$
                                         $1->nextSibling = $2;
                                         $2->nextSibling = $4;
                                         //strcpy($3->PD2_type, "assign_op");
-                                        $$->sym = AddSym($2->lexeme, $1->type);
+                                        $$->sym = AddSym($2->lexeme, $1->type, vartmp);
                                         $$->type = $1->type;
                                         GenQuad("=", $4->sym, NULL, $$->sym);
                                     }
@@ -236,14 +261,14 @@ ARR_IDS :   COMMA ARR_ID ARR_IDS    {   Init_PD2(&$$, "feild");
     ;
 
 ARR_ID  :   ID  {   $$ = $1;
-                    $$->sym = AddSym($1->lexeme, invalid);
+                    $$->sym = AddSym($1->lexeme, invalid, vartmp);
                     InsertTargetSym(&($$->typelist), $$->sym);
                 }
     |   ID OS int_literal CS    {   Init_PD2(&$$, "array");
                                     $$->firstChild = $1;
                                     $1->nextSibling = $3;
                                     PrintTree($$);
-                                    $$->sym = AddSym($1->lexeme, array);
+                                    $$->sym = AddSym($1->lexeme, array, vartmp);
                                     $$->sym->arraySize = $3->sym;
                                     InsertTargetSym(&($$->typelist), $$->sym);
                                 }
@@ -267,12 +292,12 @@ args1   :   COMMA arg args1 {   Init_PD2(&$$, "args");
 
 arg :   BOOL ID {   Init_PD2(&$$, "bool");
                     $$->firstChild = $2;
-                    $$->sym = AddSym($2->lexeme, boolean);
+                    $$->sym = AddSym($2->lexeme, boolean, vartmp);
                     $$->type = boolean;
                 }
     |   INT ID  {   Init_PD2(&$$, "int");
                     $$->firstChild = $2;
-                    $$->sym = AddSym($2->lexeme, integer);
+                    $$->sym = AddSym($2->lexeme, integer, vartmp);
                     $$->type = integer;
                 }
     ;
@@ -286,7 +311,7 @@ block   :   OB { PushSymTab(); } var_decls stmts CB   {   Init_PD2(&$$, "block")
                                             $$->firstChild = $4;
                                         MergeBackpatch(&($$->nextlist), $3->nextlist);
                                         MergeBackpatch(&($$->nextlist), $4->nextlist);
-                                        //if(DEBUG_MODE)
+                                        if(DEBUG_MODE)
                                             PrintSymbols();
                                         PopSymTab();
                                     }
@@ -322,7 +347,7 @@ vars    :   COMMA var vars  {   Init_PD2(&$$, "var");
     ;
 
 var :   ID  {   $$ = $1;
-                $1->sym = AddSym($1->lexeme, invalid);
+                $1->sym = AddSym($1->lexeme, invalid, vartmp);
                 InsertTargetSym(&($$->typelist), $1->sym);
             }
     ;
@@ -391,10 +416,22 @@ stmt	:	block    {   $$ = $1; }
     }
     ;
 
-method_call :   CALLOUT OP string_literal CP   {   Init_PD2(&$$, "callout");
+method_call :   CALLOUT OP string_literal callout_args CP   {   Init_PD2(&$$, "callout");
                                                     $$->firstChild = $3;
                                                     $3->nextSibling = $4;
+                                                    struct symbol* nArgs = GenParams($4->args);
+                                                    struct symbol* f = FindFunction($3->lexeme);
+                                                    if (!f) f = AddSym($3->lexeme, integer, fvar);
+                                                    GenQuad("call", f, nArgs , NULL);
         }
+    ;
+
+callout_args    :   callout_args COMMA expr_a { 	Init_PD2 (&$$, "callout_args");
+                                                MergeArgList(&($$->args), $1->args);
+                                                InsertArg(&($$->args), $3->sym);
+                                            }
+    |       { Init_PD2 (&$$, ""); }
+
     ;
 
 Rexpr   :   OP expr_a CP    {  $$ = $2;
@@ -600,18 +637,18 @@ factor  :	OP expr_a CP	{	$$ = $2;
     ;
 
 literal :   int_literal	{	Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = AddSym($1->lexeme, integer);
+                            $$->sym = AddSym($1->lexeme, integer, int_const);
                         }
     |   string_literal  {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = AddSym($1->lexeme, string);
+                            $$->sym = AddSym($1->lexeme, string, str_const);
                             //$$->firstChild = $1;
                         }
     |   char_literal    {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = AddSym($1->lexeme, character);
+                            $$->sym = AddSym($1->lexeme, character, char_constant);
                             //$$->firstChild = $1;
                         }
     |   bool_literal    {   Init_PD2(&$$, $1->PD2_type);
-                            $$->sym = AddSym($1->lexeme, boolean);
+                            $$->sym = AddSym($1->lexeme, boolean, bool_constant);
                             struct quadtab* q1 = GenQuad("goto", $$->sym, NULL, NULL);
                             if(strcmp($1->lexeme, "true"))
                                 InsertTarget(&($$->truelist), q1);
@@ -630,6 +667,7 @@ M   :       {
 #include "lex.yy.c"
 
 int quadid = 1;
+int offset = 0;
 
 int IncLabel(){
     quadid ++;
@@ -640,10 +678,21 @@ int GetLabel(){
     return quadid;
 }
 
+int GetOffset (int x) {
+
+  x = x + 16;
+
+  //align
+  x = ((x + 15) / 16) * 16;
+
+  return x;
+
+}//GetOFfset
+
 struct symbol* InstallLabel(){
     char label[256];
     sprintf(label, "L%d", GetLabel());
-    return(AddSym(label, integer));
+    return(AddSym(label, integer, labelvar));
 }
 
 void Backpatch(struct backpatchList* l, struct symbol* s){
@@ -699,6 +748,34 @@ void InsertTargetSym(struct backpatchList** x, struct symbol* s){
     //PrintList (*x);
 }//InsertTarget
 
+void InsertArg(struct argList** x, struct symbol* y){
+    struct argList* z = (struct argList*) malloc (sizeof (struct argList));
+    z->arg = y;
+    z->next= NULL;
+    if (*x == NULL) {
+      *x = z;
+      return;
+    }
+    struct argList* w = *x;
+    while (w->next != NULL)
+        w = w->next;
+    w->next = z;
+}//InsertArg
+
+void MergeArgList(struct argList** x, struct argList* y) {
+      if (*x == NULL) {
+        *x = y;
+        return;
+      }
+
+      struct argList* z = *x;
+      while (z->next != NULL) {
+        z = z->next;
+      }
+      z->next = y;
+}//MergeArgList
+
+
 void UpdateType(struct backpatchList* x, enum dataType ty){
     if(x == NULL) return;
     struct backpatchList* toPatch = x;
@@ -719,9 +796,9 @@ void UpdateType(struct backpatchList* x, enum dataType ty){
 
 struct symbol* FindSymbol(char* lexeme){
     if(strcmp(lexeme, "") == 0)
-        return AddSym(lexeme, invalid);
-    if(lexeme[0] >= '1' && lexeme[0] <= '9'){
-        return AddSym(lexeme, integer);
+        return AddSym(lexeme, invalid, vartmp);
+    if(lexeme[0] >= '0' && lexeme[0] <= '9'){
+        return AddSym(lexeme, integer, int_const);
     }
     struct symtab* s = symStack;
     while (s != NULL) {
@@ -737,6 +814,21 @@ struct symbol* FindSymbol(char* lexeme){
     printf("FS undefined variable/function %s\n", lexeme);
     if(!DEBUG_MODE){
         exit(0);
+    }
+    return NULL;
+}
+
+struct symbol* FindFunction(char* lexeme){
+
+    struct symtab* s = symStack;
+    while (s != NULL) {
+        struct symbol* sym = s->symbols;
+        while (sym != NULL){
+            if (strcmp(lexeme, sym->name) == 0)
+                return sym;
+            sym = sym->next;
+        }
+        s = s->next;
     }
     return NULL;
 }
@@ -760,7 +852,7 @@ void PrintQuads(){
     printf ("\n\n");
 }//PrintQuads
 
-void PrintQuad(struct quadtab* q) {
+int PrintQuad(struct quadtab* q) {
     if (strcmp(q->opcode, "=") == 0){
         if(isArray(q->src1)){
             printf("L%d: %s = %s[%s]\n", q->idx, q->dst->name, q->src1->name, q->src2->name);
@@ -772,12 +864,20 @@ void PrintQuad(struct quadtab* q) {
             printf("L%d: %s = %s\n", q->idx, q->dst->name, q->src1->name);
     }
     else if (strcmp(q->opcode, "if") == 0){
-        if(q->dst->name)
+        if(q->dst->name) {
             printf("L%d: if %s goto %s\n", q->idx, q->src1->name, q->dst->name);
+        }
+        else {
+            return 0;
+        }
     }
     else if (strcmp(q->opcode, "ifFalse") == 0){
-        if(q->dst->name)
+        if(q->dst->name) {
             printf("L%d: ifFalse %s goto %s\n", q->idx, q->src1->name, q->dst->name);
+        }
+        else {
+            return 0;
+        }
     }
     else if (strcmp(q->opcode, "goto") == 0)
         printf("L%d: goto %s\n", q->idx, q->dst->name);
@@ -794,6 +894,7 @@ void PrintQuad(struct quadtab* q) {
     else
         printf ("L%d: %s = %s %s %s\n", q->idx, q->dst->name, q->src1->name, q->opcode, q->src2->name);
 
+    return 1;
 }//PrintQuad
 
 int isArray(struct symbol* s){
@@ -813,7 +914,7 @@ void PopSymTab() {//pop from symbol table stack
     symStack = symStack->next;
 }//PopSymTab
 
-struct symbol* AddSym (char* name, enum dataType ty){
+struct symbol* AddSym (char* name, enum dataType ty, enum symType sy){
     struct symbol* s = FindSymbolBlock(name);
     if(s != NULL) {
         if(strcmp(name, "") == 0 || (name[0] >= '1' && name[0] <= '9') || name[0] == 'L')
@@ -825,11 +926,17 @@ struct symbol* AddSym (char* name, enum dataType ty){
     struct symbol* var = (struct symbol*) malloc(sizeof( struct symbol));
     strcpy(var->name, name);
     var->type = ty;
+    var->sType = sy;
+
+    if (var->sType == vartmp) {
+      offset = GetOffset(offset);
+      var->offset = offset;
+    }
+
     var->next = symStack->symbols;
     symStack->symbols = var;
     return var;
 }//AddSym
-
 
 struct symbol* GenSym(enum dataType ty){
     static int tempid = 0;
@@ -837,10 +944,38 @@ struct symbol* GenSym(enum dataType ty){
     struct symbol* temp = (struct symbol*) malloc (sizeof( struct symbol));
     sprintf(temp->name, "t%d", tempid);
     temp->type = ty;
+
+    temp->sType = vartmp;
+    offset = GetOffset(offset);
+    temp->offset = offset;
+
     temp->next = symStack->symbols;
     symStack->symbols = temp;
     return temp;
 }//GenSym
+
+struct symbol* GenParams (struct argList* x){
+    int nArgs = 0;
+    struct argList* z = x;
+    while (z != NULL) {
+        GenQuad("param", NULL, NULL, z->arg);
+        nArgs ++;
+        z = z->next;
+    }
+    char a[256]; sprintf(a, "%d", nArgs);
+    struct symbol* s = FindSymbol(a);
+    if (s)
+        return s;
+
+    if (a[0] == '"') {
+      s = AddSym(a, voidtype, str_const);
+    }
+    else {
+      s = AddSym(a, integer, int_const);
+    }
+
+    return s;
+}//GenParams
 
 struct quadtab* GenQuad(char* opcode, struct symbol* src1, struct symbol* src2, struct symbol* dst) {
     int quadid = GetLabel();
@@ -869,7 +1004,7 @@ struct symbol* getFindSym(char* lexeme, enum dataType ty){
     //    printf("%s %d\n", lexeme, ty);
     struct symbol* s = FindSymbol (lexeme);
     if (!s) {
-        s = AddSym(lexeme, ty);
+        s = AddSym(lexeme, ty, int_const);
         if(lexeme[0] < '0' || lexeme[0] > '9')
             printf("undefined variable/function %s\n", lexeme);
         if(!DEBUG_MODE)
@@ -885,8 +1020,8 @@ void AddFunction(){
 struct symbol* getOffset(enum dataType ty){
     static int x = 1;
     if(x){
-        AddSym("1", integer);
-        AddSym("4", integer);
+        AddSym("1", integer, int_const);
+        AddSym("4", integer, int_const);
         x = 0;
     }
     if(intArray == ty)
@@ -1003,6 +1138,8 @@ void Print (struct info* x, int level) {
 
     Print (x->nextSibling, level);
 }
+
+#include "x86.cpp"
 
 int main(void){
     PushSymTab();
